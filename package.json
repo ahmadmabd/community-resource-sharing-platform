@@ -19,6 +19,7 @@
     "prisma": "^7.10.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
+    "react-hot-toast": "^2.6.0",
     "zod": "^4.5.4"
   },
   "devDependencies": {
