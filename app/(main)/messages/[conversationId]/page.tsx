@@ -40,7 +40,8 @@ export default async function ChatPage({
             },
           },
         },
-        orderBy: { createdAt: "asc" },
+        orderBy: { createdAt: "desc" },
+        take: 50,
       },
     },
   });
@@ -61,13 +62,21 @@ export default async function ChatPage({
     (p) => p.userId !== session.user.id
   )?.user;
 
+  const initialMessages = conversation.messages
+    .slice()
+    .reverse()
+    .map((message) => ({
+      ...message,
+      createdAt: message.createdAt.toISOString(),
+    }));
+
   return (
     <ChatWindow
       conversationId={conversationId}
       currentUserId={session.user.id}
       currentUserName={session.user.name ?? ""}
       otherUser={otherUser ?? { id: "", name: "Unknown", email: "" }}
-      initialMessages={conversation.messages}
+      initialMessages={initialMessages}
     />
   );
 }

@@ -20,6 +20,7 @@ export default async function DashboardPage() {
       name: true,
       email: true,
     },
+    take: 50,
   });
 
   return (
@@ -68,10 +69,6 @@ function StartChatButton({ userId }: { userId: string }) {
   return (
     <form action={async () => {
       "use server";
-      const { getServerSession } = await import("next-auth");
-      const { authOptions } = await import("@/lib/auth");
-      const { prisma } = await import("@/lib/prisma");
-      const { redirect } = await import("next/navigation");
 
       const session = await getServerSession(authOptions);
       if (!session) redirect("/login");

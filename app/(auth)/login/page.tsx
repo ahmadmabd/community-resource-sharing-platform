@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   Camera,
   Users,
@@ -14,6 +16,7 @@ import {
 import { z } from "zod";
 import { signIn } from "next-auth/react";
 import toast from "react-hot-toast";
+import { successToastStyle } from "@/lib/toastStyles";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -23,6 +26,7 @@ const loginSchema = z.object({
 type LoginForm = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -72,19 +76,10 @@ export default function LoginPage() {
         return;
       }
 
-      toast.success("Welcome back to ShareHub!", {
-        duration: 2000,
-        style: {
-          background: "#0F4C35",
-          color: "#fff",
-          borderRadius: "12px",
-          padding: "12px 20px",
-          fontSize: "14px",
-        },
-      });
+      toast.success("Welcome back to ShareHub!", successToastStyle);
 
       setTimeout(() => {
-        window.location.href = "/dashboard";
+        router.push("/dashboard");
       }, 2000);
     } catch (error) {
       toast.error("Something went wrong. Please try again.");
@@ -112,10 +107,13 @@ export default function LoginPage() {
 
         <div className="px-8 py-6">
           <div className="flex flex-col items-center mb-6">
-            <img
+            <Image
               src="/images/logo.png"
               alt="ShareHub logo"
+              width={176}
+              height={176}
               className="w-44 object-contain"
+              priority
             />
           </div>
 

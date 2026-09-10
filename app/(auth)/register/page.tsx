@@ -1,9 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, User } from "lucide-react";
 import { z } from "zod";
 import toast from "react-hot-toast";
+import { successToastStyle } from "@/lib/toastStyles";
 
 const registerSchema = z
   .object({
@@ -23,6 +26,7 @@ const registerSchema = z
 type RegisterForm = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -85,19 +89,13 @@ export default function RegisterPage() {
         return;
       }
 
-      toast.success("Welcome to ShareHub! Your community awaits.", {
-        duration: 2000,
-        style: {
-          background: "#0F4C35",
-          color: "#fff",
-          borderRadius: "12px",
-          padding: "12px 20px",
-          fontSize: "14px",
-        },
-      });
+      toast.success(
+        "Welcome to ShareHub! Your community awaits.",
+        successToastStyle,
+      );
 
       setTimeout(() => {
-        window.location.href = "/login";
+        router.push("/login");
       }, 2000);
     } catch (error) {
       toast.error("Something went wrong. Please try again.");
@@ -125,10 +123,13 @@ export default function RegisterPage() {
 
         <div className="px-8 py-4">
           <div className="flex flex-col items-center mb-2">
-            <img
+            <Image
               src="/images/logo.png"
               alt="ShareHub logo"
+              width={112}
+              height={112}
               className="w-28 object-contain"
+              priority
             />
           </div>
 

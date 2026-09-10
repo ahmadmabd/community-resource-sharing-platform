@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { ArrowLeft, Send } from "lucide-react";
 import Link from "next/link";
+import toast from "react-hot-toast";
 
 type Message = {
   id: string;
@@ -57,15 +58,17 @@ export default function ChatWindow({
         body: JSON.stringify({ content }),
       });
 
-      
+      const data = await response.json();
 
-      if (response.ok) {
-  const message = await response.json();
-  setMessages((prev) => [...prev, message]);
-  setContent("");
-}
-    } catch (error) {
-      console.error("Failed to send message:", error);
+      if (!response.ok) {
+        toast.error(data.error || "Failed to send message");
+        return;
+      }
+
+      setMessages((prev) => [...prev, data]);
+      setContent("");
+    } catch {
+      toast.error("Failed to send message. Please try again.");
     } finally {
       setIsSending(false);
     }
