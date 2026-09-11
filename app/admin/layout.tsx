@@ -1,6 +1,6 @@
 import React from "react";
-import Sidebar from "@/temp-components/uia/admin/Sidebar";
-import Navbar from "@/temp-components/uia/admin/Navbar";
+import Sidebar from "@/components/ui/admin/Sidebar";
+import Navbar from "@/components/ui/admin/Navbar";
 const layout = ({ children }: LayoutProps<"/">) => {
   return (
     <div className="flex min-h-screen w-full">

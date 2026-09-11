@@ -1,5 +1,5 @@
 import React from "react";
-import DashboardCards from "@/temp-components/uia/admin/DashboardCards";
+import DashboardCards from "@/components/ui/admin/DashboardCards";
 const Dashboard = [
   {
     id: 1,
