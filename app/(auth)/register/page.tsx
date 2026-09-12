@@ -95,7 +95,7 @@ export default function RegisterPage() {
       );
 
       setTimeout(() => {
-        router.push("/login");
+        router.push("/");
       }, 2000);
     } catch (error) {
       toast.error("Something went wrong. Please try again.");

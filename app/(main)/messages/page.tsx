@@ -46,7 +46,7 @@ export default async function MessagesPage() {
       <div className="max-w-2xl mx-auto px-4 py-10">
 
         <div className="flex items-center gap-3 mb-8">
-  <Link href="/dashboard" className="text-gray-400 hover:text-gray-600 transition-colors">
+  <Link href="/" className="text-gray-400 hover:text-gray-600 transition-colors">
     <ArrowLeft size={20} />
   </Link>
   <MessageCircle size={24} color="#0F4C35" />
@@ -57,7 +57,7 @@ export default async function MessagesPage() {
             <div className="text-center py-16">
               <MessageCircle size={40} className="mx-auto text-gray-300 mb-3" />
               <p className="text-gray-400 text-sm">No conversations yet</p>
-              <Link href="/dashboard" className="text-[#0F4C35] text-sm font-medium hover:underline mt-2 inline-block">
+              <Link href="/" className="text-[#0F4C35] text-sm font-medium hover:underline mt-2 inline-block">
                 Find people to chat with
               </Link>
             </div>

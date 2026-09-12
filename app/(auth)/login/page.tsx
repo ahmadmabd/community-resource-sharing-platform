@@ -79,7 +79,7 @@ export default function LoginPage() {
       toast.success("Welcome back to ShareHub!", successToastStyle);
 
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push("/");
       }, 2000);
     } catch (error) {
       toast.error("Something went wrong. Please try again.");
