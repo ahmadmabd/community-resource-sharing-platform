@@ -32,12 +32,12 @@ const Sidebar = () => {
         <span className="block py-2 px-4 rounded hover:bg-gray-700 cursor-pointer">
           Settings
         </span>
-        <span
+        <button
           onClick={() => signOut({ callbackUrl: "/" })}
-          className="block py-2 px-4 rounded hover:bg-gray-700 cursor-pointer"
+          className="block w-full text-left py-2 px-4 rounded hover:bg-gray-700 cursor-pointer"
         >
           Logout
-        </span>
+        </button>
       </div>
     </section>
   );

@@ -1,4 +1,5 @@
-import { Bell, Search } from "lucide-react";
+import { Bell, Home, Search } from "lucide-react";
+import Link from "next/link";
 
 type DashboardHeaderProps = {
   userName: string;
@@ -35,6 +36,14 @@ export default function DashboardHeader({ userName }: DashboardHeaderProps) {
             className="h-10 w-56 rounded-lg border border-gray-200 bg-white pl-10 pr-4 text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-gray-400 focus:ring-2 focus:ring-gray-100"
           />
         </div>
+
+        <Link
+          href="/"
+          aria-label="Home"
+          className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 hover:text-gray-900"
+        >
+          <Home size={18} />
+        </Link>
 
         {/* Notifications */}
         <button

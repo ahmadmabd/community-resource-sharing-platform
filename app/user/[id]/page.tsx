@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 interface ProfilePageProps {
   params: Promise<{
@@ -80,6 +82,13 @@ export default async function UserProfilePage({ params }: ProfilePageProps) {
   return (
     <main className="min-h-screen bg-gray-50 p-6 sm:p-8">
       <div className="mx-auto max-w-5xl space-y-6">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors"
+        >
+          <ArrowLeft size={16} /> Back to home
+        </Link>
+
         <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <div className="flex items-center gap-5">
             {user.image ? (

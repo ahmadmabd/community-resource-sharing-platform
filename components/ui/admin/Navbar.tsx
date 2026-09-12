@@ -30,7 +30,7 @@ const Navbar = ({ userName }: NavbarProps) => {
           </svg>
         </button>
         <div className="text-white font-bold text-lg">My App</div>
-        <div className="space-x-4 text-white">{userName.toUpperCase()}</div>
+        <div className="space-x-4 text-white">{userName?.toUpperCase() ?? ""}</div>
       </div>
       {mobileMenuOpen && (
         <div className="flex flex-col bg-gray-800 text-white gap-2 p-2 md:hidden ">

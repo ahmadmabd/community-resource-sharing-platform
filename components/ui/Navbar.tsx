@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { signOut } from "next-auth/react";
-import { Search, MessageCircle, Bell, LayoutDashboard, LogOut, User, ChevronDown } from "lucide-react";
+import { Search, MessageCircle, Bell, LayoutDashboard, LogOut, User, ChevronDown, Menu, Home } from "lucide-react";
 
 type NavbarProps = {
   session: {
@@ -18,6 +18,7 @@ type NavbarProps = {
 
 export default function Navbar({ session }: NavbarProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -89,7 +90,7 @@ export default function Navbar({ session }: NavbarProps) {
                   </Link>
                   <div className="border-t border-[#EDECEA] my-1" />
                   <button
-                    onClick={() => signOut({ callbackUrl: "/login" })}
+                    onClick={() => signOut({ callbackUrl: "/" })}
                     className="w-full flex items-center gap-2.5 px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors"
                   >
                     <LogOut size={15} />
@@ -105,7 +106,66 @@ export default function Navbar({ session }: NavbarProps) {
             <Link href="/register" className="text-sm text-white bg-[#0F4C35] px-4 py-1.5 rounded-lg hover:bg-[#0D3F2C] transition-colors font-medium">Get started</Link>
           </>
         )}
+
+        <button
+          onClick={() => setMobileMenuOpen((prev) => !prev)}
+          aria-label="Menu"
+          className="md:hidden w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors text-gray-600"
+        >
+          <Menu size={20} />
+        </button>
       </div>
+
+      {mobileMenuOpen && (
+        <div className="md:hidden absolute top-full left-0 w-full bg-white border-b border-[#EDECEA] shadow-lg py-2 z-50">
+          <Link
+            href="/"
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center gap-2.5 px-6 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+          >
+            <Home size={15} className="text-gray-400" />
+            Home
+          </Link>
+          <Link
+            href="/resources"
+            onClick={() => setMobileMenuOpen(false)}
+            className="flex items-center gap-2.5 px-6 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+          >
+            <Search size={15} className="text-gray-400" />
+            Browse
+          </Link>
+          {session && (
+            <Link
+              href="/messages"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2.5 px-6 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              <MessageCircle size={15} className="text-gray-400" />
+              Messages
+            </Link>
+          )}
+          {session && (
+            <Link
+              href={dashboardHref}
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2.5 px-6 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              <LayoutDashboard size={15} className="text-gray-400" />
+              Dashboard
+            </Link>
+          )}
+          {session && (
+            <Link
+              href="/notifications"
+              onClick={() => setMobileMenuOpen(false)}
+              className="flex items-center gap-2.5 px-6 py-2.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              <Bell size={15} className="text-gray-400" />
+              Notifications
+            </Link>
+          )}
+        </div>
+      )}
     </nav>
   );
 }
