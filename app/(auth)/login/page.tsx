@@ -76,10 +76,13 @@ export default function LoginPage() {
         return;
       }
 
+      const sessionResponse = await fetch("/api/auth/session");
+      const sessionData = await sessionResponse.json();
+
       toast.success("Welcome back to ShareHub!", successToastStyle);
 
       setTimeout(() => {
-        router.push("/");
+        router.push(sessionData?.user?.role === "ADMIN" ? "/admin" : "/");
       }, 2000);
     } catch (error) {
       toast.error("Something went wrong. Please try again.");

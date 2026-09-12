@@ -2,8 +2,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import Link from "next/link";
 import Image from "next/image";
-import LogoutButton from "@/components/auth/LogoutButton";
-import { ArrowRight, Camera, Share2, MessageCircle, Leaf, Bell, LayoutDashboard, Search, Star } from "lucide-react";
+import Navbar from "@/components/ui/Navbar";
+import { ArrowRight, Camera, Share2, MessageCircle, Leaf, Star } from "lucide-react";
 
 export default async function HomePage() {
   const session = await getServerSession(authOptions);
@@ -11,47 +11,7 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-[#FAFAF7] font-sans">
 
-      <nav className="flex items-center justify-between px-6 md:px-10 py-2 bg-white border-b border-[#EDECEA] sticky top-0 z-50">
-        <Link href="/">
-          <Image src="/images/logo.png" alt="ShareHub logo" width={100} height={32} className="object-contain" />
-        </Link>
-
-        <div className="hidden md:flex items-center gap-6">
-          <Link href="/" className="text-sm text-gray-600 hover:text-[#0F4C35] transition-colors">Home</Link>
-          <Link href="/resources" className="text-sm text-gray-600 hover:text-[#0F4C35] transition-colors flex items-center gap-1">
-            <Search size={13} /> Browse
-          </Link>
-          {session && (
-            <>
-              <Link href="/messages" className="text-sm text-gray-600 hover:text-[#0F4C35] transition-colors flex items-center gap-1">
-                <MessageCircle size={13} /> Messages
-              </Link>
-              <Link href="/notifications" className="text-sm text-gray-600 hover:text-[#0F4C35] transition-colors flex items-center gap-1">
-                <Bell size={13} /> Notifications
-              </Link>
-              <Link href="" className="text-sm text-gray-600 hover:text-[#0F4C35] transition-colors flex items-center gap-1">
-                <LayoutDashboard size={13} /> Dashboard
-              </Link>
-            </>
-          )}
-        </div>
-
-        <div className="flex items-center gap-3">
-          {session ? (
-            <>
-              <span className="text-sm text-gray-500 hidden sm:block">
-                Hello, <span className="font-medium text-gray-900">{session.user.name}</span>
-              </span>
-              <LogoutButton />
-            </>
-          ) : (
-            <>
-              <Link href="/login" className="text-sm text-gray-600 hover:text-gray-900 px-3 py-1.5 rounded-lg border border-[#EDECEA] transition-colors">Sign in</Link>
-              <Link href="/register" className="text-sm text-white bg-[#0F4C35] px-4 py-1.5 rounded-lg hover:bg-[#0D3F2C] transition-colors font-medium">Get started</Link>
-            </>
-          )}
-        </div>
-      </nav>
+      <Navbar session={session} />
 
       <section className="px-6 md:px-10 py-16 bg-white relative overflow-hidden">
         <div className="absolute top-0 right-0 w-72 h-72 rounded-full bg-[#E8F5EE] opacity-50 -translate-y-1/2 translate-x-1/2" />
@@ -72,21 +32,16 @@ export default async function HomePage() {
             </p>
             <div className="flex gap-3 flex-wrap">
               {session ? (
-                <>
-                  <Link href="" className="inline-flex items-center gap-2 bg-[#0F4C35] text-white font-semibold text-sm px-6 py-3 rounded-xl hover:bg-[#0D3F2C] transition-colors">
-                    Go to your dashboard <ArrowRight size={15} />
-                  </Link>
-                  <Link href="/resources" className="inline-flex items-center gap-2 bg-[#FAFAF7] text-gray-700 text-sm px-6 py-3 rounded-xl border border-[#EDECEA] hover:bg-gray-100 transition-colors">
-                    <Search size={15} /> Browse resources
-                  </Link>
-                </>
+                <Link href="/resources" className="inline-flex items-center gap-2 bg-[#0F4C35] text-white font-semibold text-sm px-6 py-3 rounded-xl hover:bg-[#0D3F2C] transition-colors">
+                  Browse resources <ArrowRight size={15} />
+                </Link>
               ) : (
                 <>
                   <Link href="/register" className="inline-flex items-center gap-2 bg-[#0F4C35] text-white font-semibold text-sm px-6 py-3 rounded-xl hover:bg-[#0D3F2C] transition-colors">
                     Start sharing <ArrowRight size={15} />
                   </Link>
                   <Link href="/resources" className="inline-flex items-center gap-2 bg-[#FAFAF7] text-gray-700 text-sm px-6 py-3 rounded-xl border border-[#EDECEA] hover:bg-gray-100 transition-colors">
-                    <Search size={15} /> Browse resources
+                    Browse resources
                   </Link>
                 </>
               )}
@@ -253,8 +208,8 @@ export default async function HomePage() {
           <p className="text-sm text-[#9FE1CB] mb-8 leading-relaxed">Start borrowing and sharing with your community today. It's completely free.</p>
           <div className="flex gap-3 justify-center flex-wrap">
             {session ? (
-              <Link href="/dashboard" className="inline-flex items-center gap-2 bg-[#F5A623] text-[#0F4C35] font-bold text-sm px-7 py-3 rounded-xl hover:bg-[#E09A1F] transition-colors">
-                Go to dashboard <ArrowRight size={15} />
+              <Link href="/resources" className="inline-flex items-center gap-2 bg-[#F5A623] text-[#0F4C35] font-bold text-sm px-7 py-3 rounded-xl hover:bg-[#E09A1F] transition-colors">
+                Browse resources <ArrowRight size={15} />
               </Link>
             ) : (
               <>
