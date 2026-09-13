@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
 import URLS from "./admin-navigation";
 const Sidebar = () => {
   const pathname = usePathname();
@@ -31,9 +32,12 @@ const Sidebar = () => {
         <span className="block py-2 px-4 rounded hover:bg-gray-700 cursor-pointer">
           Settings
         </span>
-        <span className="block py-2 px-4 rounded hover:bg-gray-700 cursor-pointer">
+        <button
+          onClick={() => signOut({ callbackUrl: "/" })}
+          className="block w-full text-left py-2 px-4 rounded hover:bg-gray-700 cursor-pointer"
+        >
           Logout
-        </span>
+        </button>
       </div>
     </section>
   );

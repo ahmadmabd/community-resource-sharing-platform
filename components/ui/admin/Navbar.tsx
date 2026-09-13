@@ -3,7 +3,10 @@ import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
 import URLS from "./admin-navigation";
-const Navbar = () => {
+type NavbarProps = {
+  userName: string;
+};
+const Navbar = ({ userName }: NavbarProps) => {
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   return (
@@ -27,7 +30,7 @@ const Navbar = () => {
           </svg>
         </button>
         <div className="text-white font-bold text-lg">My App</div>
-        <div className="space-x-4 text-white">AHMAD</div>
+        <div className="space-x-4 text-white">{userName?.toUpperCase() ?? ""}</div>
       </div>
       {mobileMenuOpen && (
         <div className="flex flex-col bg-gray-800 text-white gap-2 p-2 md:hidden ">

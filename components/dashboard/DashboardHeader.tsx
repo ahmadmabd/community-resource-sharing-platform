@@ -1,11 +1,16 @@
-import { Bell, Search } from "lucide-react";
+import { Bell, Home, Search } from "lucide-react";
+import Link from "next/link";
 
-export default function DashboardHeader() {
+type DashboardHeaderProps = {
+  userName: string;
+};
+
+export default function DashboardHeader({ userName }: DashboardHeaderProps) {
   return (
     <header className="flex flex-col gap-4 border-b border-gray-200 pb-6 sm:flex-row sm:items-center sm:justify-between">
       {/* Left side */}
       <div>
-        <p className="text-sm font-medium text-gray-500">Welcome back</p>
+        <p className="text-sm font-medium text-gray-500">Welcome back, {userName}</p>
 
         <h1 className="mt-1 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
           Dashboard
@@ -32,6 +37,14 @@ export default function DashboardHeader() {
           />
         </div>
 
+        <Link
+          href="/"
+          aria-label="Home"
+          className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-600 transition hover:bg-gray-50 hover:text-gray-900"
+        >
+          <Home size={18} />
+        </Link>
+
         {/* Notifications */}
         <button
           type="button"
@@ -50,7 +63,7 @@ export default function DashboardHeader() {
           aria-label="Open profile"
           className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-gray-900 text-sm font-semibold text-white transition hover:bg-gray-800"
         >
-          Z
+          {userName.charAt(0).toUpperCase()}
         </button>
       </div>
     </header>
