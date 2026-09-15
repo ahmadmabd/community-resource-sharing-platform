@@ -1,4 +1,6 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
@@ -22,6 +24,13 @@ export default async function CreateResourcePage() {
   return (
     <main className="min-h-screen bg-gray-50 px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
+        <Link
+          href="/resources"
+          className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#0F4C35] mb-6 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Back to resources
+        </Link>
         <div className="mb-8">
           <p className="mb-2 text-sm font-medium text-green-800">
             Community Resource Sharing

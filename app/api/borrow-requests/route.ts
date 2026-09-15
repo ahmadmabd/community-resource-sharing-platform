@@ -57,11 +57,13 @@ export async function POST(req: NextRequest) {
     const start = new Date(startDate);
     const end = new Date(endDate);
 
-    if (start >= end) {
+    if (start > end) {
       return NextResponse.json({ error: "End date must be after start date" }, { status: 400 });
     }
 
-    if (start < new Date()) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (start < today) {
       return NextResponse.json({ error: "Start date cannot be in the past" }, { status: 400 });
     }
 

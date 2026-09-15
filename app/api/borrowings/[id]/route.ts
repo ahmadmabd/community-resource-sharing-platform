@@ -86,10 +86,12 @@ export async function PATCH(
         },
       });
 
-      await tx.reservation.update({
-        where: { borrowingId: id },
-        data: { status: "COMPLETED" },
-      });
+      if (borrowing.reservationId) {
+        await tx.reservation.update({
+          where: { id: borrowing.reservationId },
+          data: { status: "COMPLETED" },
+        });
+      }
 
       return updatedBorrowing;
     });
