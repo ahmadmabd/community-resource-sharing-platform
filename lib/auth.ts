@@ -38,6 +38,10 @@ export const authOptions: AuthOptions = {
         const passwordMatch = await bcrypt.compare(password, user.passwordHash);
         if (!passwordMatch) return null;
 
+        if (user.status === "SUSPENDED") {
+          throw new Error("SUSPENDED:" + user.suspendReason);
+        }
+
         return {
           id: user.id,
           name: user.name,

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, User } from "lucide-react";
 import { z } from "zod";
 import toast from "react-hot-toast";
@@ -94,9 +95,19 @@ export default function RegisterPage() {
         successToastStyle,
       );
 
-      setTimeout(() => {
-        router.push("/");
-      }, 2000);
+      const signInResult = await signIn("credentials", {
+        email: form.email,
+        password: form.password,
+        redirect: false,
+      });
+
+      if (signInResult?.error) {
+        router.push("/login");
+        return;
+      }
+
+      router.push("/");
+      router.refresh();
     } catch (error) {
       toast.error("Something went wrong. Please try again.");
     } finally {

@@ -93,6 +93,7 @@ model User {
 
   role   UserRole   @default(USER)
   status UserStatus @default(ACTIVE)
+  suspendReason String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
