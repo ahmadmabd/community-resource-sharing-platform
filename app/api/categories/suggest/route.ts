@@ -30,6 +30,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "This category already exists" }, { status: 409 });
     }
 
+    await prisma.categorySuggestion.create({
+      data: {
+        name: result.data.name,
+        userId: session.user.id,
+        status: "PENDING",
+      },
+    });
+
     return NextResponse.json({ message: "Suggestion received! Admin will review it." });
   } catch {
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
