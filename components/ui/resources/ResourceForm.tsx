@@ -255,7 +255,7 @@ function ResourceForm({ categories: initialCategories }: ResourceFormProps) {
         <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center">
           {imageUrl ? (
             <div className="relative">
-              <img src={imageUrl} alt="Preview" className="w-full h-48 object-cover rounded-lg" />
+              <img src={imageUrl} alt="Preview" className="w-full h-48 object-cover rounded-xl" />
               <button
                 type="button"
                 onClick={() => setImageUrl("")}
@@ -270,8 +270,13 @@ function ResourceForm({ categories: initialCategories }: ResourceFormProps) {
               <p className="text-xs text-gray-400 mb-4">Upload a photo of your resource (max 4MB)</p>
               <UploadButton
                 endpoint="imageUploader"
+                appearance={{
+                  button: '!bg-[#0F4C35] text-white text-sm font-medium rounded-xl px-6 py-2.5 hover:!bg-[#0F4C35]/90 transition-colors cursor-pointer ut-uploading:!bg-[#0F4C35]/70 ut-uploading:cursor-not-allowed',
+                  container: 'w-full flex justify-center',
+                  allowedContent: 'hidden',
+                }}
                 onClientUploadComplete={(res) => {
-                  if (res?.[0]?.url) setImageUrl(res[0].url);
+                  if (res?.[0]?.ufsUrl) setImageUrl(res[0].ufsUrl);
                 }}
                 onUploadError={(error: Error) => {
                   toast.error(`Upload failed: ${error.message}`, successToastStyle);
