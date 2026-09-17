@@ -93,6 +93,7 @@ model User {
 
   role   UserRole   @default(USER)
   status UserStatus @default(ACTIVE)
+  suspendReason String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -124,6 +125,8 @@ model User {
   reportsCreated Report[] @relation("ReportCreator")
   reportsAgainst Report[] @relation("ReportedUser")
 
+  categorySuggestions CategorySuggestion[]
+
   @@index([status])
   @@index([role])
 }
@@ -141,6 +144,27 @@ model Category {
   updatedAt DateTime @updatedAt
 
   resources Resource[]
+}
+
+// ============================================================
+// CATEGORY SUGGESTION
+// ============================================================
+
+model CategorySuggestion {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  status    CategorySuggestionStatus @default(PENDING)
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([status])
+}
+
+enum CategorySuggestionStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 // ============================================================
