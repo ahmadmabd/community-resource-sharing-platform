@@ -20,7 +20,9 @@ export default function AdminCategoriesPage() {
   const [showAdd, setShowAdd] = useState(false);
   const [newName, setNewName] = useState("");
   const [saving, setSaving] = useState(false);
-  const [suggestions, setSuggestions] = useState<{ id: string; name: string; user: { name: string } }[]>([]);
+  const [suggestions, setSuggestions] = useState<
+    { id: string; name: string; user: { name: string } }[]
+  >([]);
 
   useEffect(() => {
     fetchCategories();
@@ -51,9 +53,12 @@ export default function AdminCategoriesPage() {
 
   async function handleApproveSuggestion(id: string, name: string) {
     try {
-      const res = await fetch(`/api/admin/categories/suggestions/${id}/approve`, {
-        method: "PATCH",
-      });
+      const res = await fetch(
+        `/api/admin/categories/suggestions/${id}/approve`,
+        {
+          method: "PATCH",
+        },
+      );
       if (!res.ok) {
         toast.error("Failed to approve suggestion", successToastStyle);
         return;
@@ -68,9 +73,12 @@ export default function AdminCategoriesPage() {
 
   async function handleRejectSuggestion(id: string) {
     try {
-      const res = await fetch(`/api/admin/categories/suggestions/${id}/reject`, {
-        method: "PATCH",
-      });
+      const res = await fetch(
+        `/api/admin/categories/suggestions/${id}/reject`,
+        {
+          method: "PATCH",
+        },
+      );
       if (!res.ok) {
         toast.error("Failed to reject suggestion", successToastStyle);
         return;
@@ -149,7 +157,7 @@ export default function AdminCategoriesPage() {
   }
 
   const filtered = categories.filter((c) =>
-    c.name.toLowerCase().includes(search.toLowerCase())
+    c.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   return (
@@ -157,7 +165,9 @@ export default function AdminCategoriesPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-semibold text-[#0A1A12]">Categories</h1>
-          <p className="text-gray-500 text-sm mt-1">{categories.length} categories</p>
+          <p className="text-gray-500 text-sm mt-1">
+            {categories.length} categories
+          </p>
         </div>
         <button
           onClick={() => setShowAdd(true)}
@@ -189,7 +199,10 @@ export default function AdminCategoriesPage() {
             <Check className="w-4 h-4" />
           </button>
           <button
-            onClick={() => { setShowAdd(false); setNewName(""); }}
+            onClick={() => {
+              setShowAdd(false);
+              setNewName("");
+            }}
             className="p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
           >
             <X className="w-4 h-4 text-gray-400" />
@@ -205,10 +218,15 @@ export default function AdminCategoriesPage() {
           </h2>
           <div className="space-y-2">
             {suggestions.map((s) => (
-              <div key={s.id} className="flex items-center justify-between bg-white rounded-lg px-4 py-2.5">
+              <div
+                key={s.id}
+                className="flex items-center justify-between bg-white rounded-lg px-4 py-2.5"
+              >
                 <div>
                   <p className="text-sm font-medium text-[#0A1A12]">{s.name}</p>
-                  <p className="text-xs text-gray-400">suggested by {s.user.name}</p>
+                  <p className="text-xs text-gray-400">
+                    suggested by {s.user.name}
+                  </p>
                 </div>
                 <div className="flex gap-2">
                   <button
@@ -246,19 +264,29 @@ export default function AdminCategoriesPage() {
         </div>
 
         {loading ? (
-          <div className="py-12 text-center text-gray-400 text-sm">Loading...</div>
+          <div className="py-16 text-center">
+            <div className="mx-auto mb-3 h-7 w-7 animate-spin rounded-full border-2 border-gray-200 border-t-[#5BB88A]" />
+            <p className="text-sm text-gray-600">Loading categories...</p>
+          </div>
         ) : (
           <table className="w-full">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Category</th>
-                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">Resources</th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  Category
+                </th>
+                <th className="text-left px-5 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  Resources
+                </th>
                 <th className="px-5 py-3"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {filtered.map((category) => (
-                <tr key={category.id} className="hover:bg-gray-50/50 transition-colors">
+                <tr
+                  key={category.id}
+                  className="hover:bg-gray-50/50 transition-colors"
+                >
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-9 h-9 rounded-lg bg-[#5BB88A]/10 flex items-center justify-center shrink-0">
@@ -269,11 +297,15 @@ export default function AdminCategoriesPage() {
                           autoFocus
                           value={editingName}
                           onChange={(e) => setEditingName(e.target.value)}
-                          onKeyDown={(e) => e.key === "Enter" && handleSaveEdit(category.id)}
+                          onKeyDown={(e) =>
+                            e.key === "Enter" && handleSaveEdit(category.id)
+                          }
                           className="text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#5BB88A]/30 focus:border-[#5BB88A]"
                         />
                       ) : (
-                        <p className="text-sm font-medium text-[#0A1A12]">{category.name}</p>
+                        <p className="text-sm font-medium text-[#0A1A12]">
+                          {category.name}
+                        </p>
                       )}
                     </div>
                   </td>
@@ -303,7 +335,10 @@ export default function AdminCategoriesPage() {
                       ) : (
                         <>
                           <button
-                            onClick={() => { setEditingId(category.id); setEditingName(category.name); }}
+                            onClick={() => {
+                              setEditingId(category.id);
+                              setEditingName(category.name);
+                            }}
                             className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
                           >
                             <Pencil className="w-3.5 h-3.5 text-gray-500" />
@@ -325,7 +360,9 @@ export default function AdminCategoriesPage() {
         )}
 
         {!loading && filtered.length === 0 && (
-          <div className="py-12 text-center text-gray-400 text-sm">No categories found</div>
+          <div className="py-12 text-center text-gray-400 text-sm">
+            No categories found
+          </div>
         )}
       </div>
     </div>
