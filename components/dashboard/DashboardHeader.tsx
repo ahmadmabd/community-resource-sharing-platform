@@ -1,16 +1,31 @@
 import { Bell, Home, Search } from "lucide-react";
 import Link from "next/link";
+import UserProfileCard from "../user/UserProfileCard";
 
 type DashboardHeaderProps = {
   userName: string;
+  userId: string;
+  userBio: string;
+  userImage: string;
+  userPhone: string;
+  userLocation: string;
 };
 
-export default function DashboardHeader({ userName }: DashboardHeaderProps) {
+export default function DashboardHeader({
+  userName,
+  userId,
+  userBio,
+  userImage,
+  userPhone,
+  userLocation,
+}: DashboardHeaderProps) {
   return (
     <header className="flex flex-col gap-4 border-b border-gray-200 pb-6 sm:flex-row sm:items-center sm:justify-between">
       {/* Left side */}
       <div>
-        <p className="text-sm font-medium text-gray-500">Welcome back, {userName}</p>
+        <p className="text-sm font-medium text-gray-500">
+          Welcome back, {userName}
+        </p>
 
         <h1 className="mt-1 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
           Dashboard
@@ -57,14 +72,21 @@ export default function DashboardHeader({ userName }: DashboardHeaderProps) {
           <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500" />
         </button>
 
-        {/* User Avatar */}
-        <button
-          type="button"
+        {/* <Link
+          href={`/user/${userId}`}
           aria-label="Open profile"
           className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-gray-900 text-sm font-semibold text-white transition hover:bg-gray-800"
         >
           {userName.charAt(0).toUpperCase()}
-        </button>
+        </Link> */}
+        <UserProfileCard
+          userId={userId}
+          userName={userName}
+          userImage={userImage}
+          bio={userBio}
+          phone={userPhone}
+          userLocation={userLocation}
+        />
       </div>
     </header>
   );

@@ -6,60 +6,30 @@ import {
   RotateCcw,
   Send,
 } from "lucide-react";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
-const activities = [
-  {
-    id: 1,
-    type: "borrow",
-    title: "Borrowed Dell Laptop",
-    description: "You borrowed a Dell Laptop from Omar Hassan.",
-    time: "2 hours ago",
-  },
-  {
-    id: 2,
-    type: "request",
-    title: "Borrow request sent",
-    description: "You requested to borrow a Canon Camera.",
-    time: "5 hours ago",
-  },
-  {
-    id: 3,
-    type: "resource",
-    title: "Resource added",
-    description: "You added Programming Book to your resources.",
-    time: "Yesterday",
-  },
-  {
-    id: 4,
-    type: "approved",
-    title: "Request approved",
-    description: "Your request for DSLR Camera was approved.",
-    time: "2 days ago",
-  },
-  {
-    id: 5,
-    type: "return",
-    title: "Resource returned",
-    description: "You returned a Power Drill.",
-    time: "3 days ago",
-  },
-];
-
-function getActivityIcon(type: string) {
-  switch (type) {
+function getActivityIcon(action: string) {
+  switch (action.toLowerCase()) {
     case "borrow":
+    case "borrowing":
       return <ActivityIcon size={18} />;
 
     case "request":
+    case "borrow_request":
       return <Send size={18} />;
 
     case "resource":
+    case "resource_added":
       return <PlusCircle size={18} />;
 
     case "approved":
+    case "approve":
       return <CheckCircle2 size={18} />;
 
     case "return":
+    case "returned":
       return <RotateCcw size={18} />;
 
     default:
@@ -67,9 +37,61 @@ function getActivityIcon(type: string) {
   }
 }
 
-export default function ActivitySection() {
+function formatRelativeTime(date: Date) {
+  const now = new Date();
+  const difference = now.getTime() - date.getTime();
+
+  const seconds = Math.floor(difference / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (seconds < 60) {
+    return "Just now";
+  }
+
+  if (minutes < 60) {
+    return `${minutes} ${minutes === 1 ? "minute" : "minutes"} ago`;
+  }
+
+  if (hours < 24) {
+    return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
+  }
+
+  if (days < 7) {
+    return `${days} ${days === 1 ? "day" : "days"} ago`;
+  }
+
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+export default async function ActivitySection() {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.id) {
+    return null;
+  }
+
+  // const userId = session.user.id;
+  const userId = "009dd114-8983-4b5c-b2c8-f2f81dd90290";
+
+  const activities = await prisma.activity.findMany({
+    where: {
+      userId,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: 5,
+  });
+
   return (
     <section className="rounded-xl border border-gray-200 bg-white shadow-sm">
+      {/* Header */}
       <div className="border-b border-gray-200 p-5">
         <h2 className="text-lg font-semibold text-gray-900">Recent Activity</h2>
 
@@ -78,32 +100,41 @@ export default function ActivitySection() {
         </p>
       </div>
 
+      {/* Activities */}
       <div className="divide-y divide-gray-100">
-        {activities.map((activity) => (
-          <div
-            key={activity.id}
-            className="flex gap-4 p-5 transition hover:bg-gray-50"
-          >
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600">
-              {getActivityIcon(activity.type)}
-            </div>
-
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                <h3 className="font-medium text-gray-900">{activity.title}</h3>
-
-                <div className="flex items-center gap-1 text-xs text-gray-400">
-                  <Clock size={13} />
-                  {activity.time}
-                </div>
+        {activities.length === 0 ? (
+          <div className="p-5 text-sm text-gray-500">No recent activity.</div>
+        ) : (
+          activities.map((activity) => (
+            <div
+              key={activity.id}
+              className="flex gap-4 p-5 transition hover:bg-gray-50"
+            >
+              {/* Icon */}
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                {getActivityIcon(activity.action)}
               </div>
 
-              <p className="mt-1 text-sm text-gray-500">
-                {activity.description}
-              </p>
+              {/* Content */}
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                  <h3 className="font-medium text-gray-900">
+                    {activity.action}
+                  </h3>
+
+                  <div className="flex items-center gap-1 text-xs text-gray-400">
+                    <Clock size={13} />
+                    {formatRelativeTime(activity.createdAt)}
+                  </div>
+                </div>
+
+                <p className="mt-1 text-sm text-gray-500">
+                  {activity.description}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
     </section>
   );

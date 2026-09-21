@@ -7,9 +7,286 @@ datasource db {
   provider = "postgresql"
 }
 
-// ============================================================
-// ENUMS
-// ============================================================
+model User {
+  id                              String                    @id @default(uuid()) @db.Uuid
+  name                            String
+  email                           String                    @unique
+  passwordHash                    String
+  imageUrl                        String?
+  bio                             String?
+  phone                           String?
+  role                            UserRole                  @default(USER)
+  status                          UserStatus                @default(ACTIVE)
+  createdAt                       DateTime                  @default(now())
+  updatedAt                       DateTime                  @updatedAt
+  suspendReason                   String?
+  location                        String?
+  Activity                        Activity[]
+  borrowRequests                  BorrowRequest[]           @relation("BorrowRequester")
+  borrowings                      Borrowing[]
+  CategorySuggestion              CategorySuggestion[]
+  conversationParticipants        ConversationParticipant[]
+  messages                        Message[]
+  notifications                   Notification[]
+  Rating_Rating_ratedUserIdToUser Rating[]                  @relation("Rating_ratedUserIdToUser")
+  Rating_Rating_raterIdToUser     Rating[]                  @relation("Rating_raterIdToUser")
+  reportsAgainst                  Report[]                  @relation("ReportedUser")
+  reportsCreated                  Report[]                  @relation("ReportCreator")
+  reservations                    Reservation[]
+  resources                       Resource[]                @relation("ResourceOwner")
+  reviewsReceived                 Review[]                  @relation("ReviewTarget")
+  reviewsWritten                  Review[]                  @relation("ReviewAuthor")
+
+  @@index([status])
+  @@index([role])
+}
+
+model Category {
+  id          String     @id @default(uuid()) @db.Uuid
+  name        String     @unique
+  description String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  resources   Resource[]
+}
+
+model Resource {
+  id             String            @id @default(uuid()) @db.Uuid
+  title          String
+  description    String
+  condition      ResourceCondition
+  status         ResourceStatus    @default(AVAILABLE)
+  location       String?
+  city           String?
+  ownerId        String            @db.Uuid
+  categoryId     String            @db.Uuid
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  borrowRequests BorrowRequest[]
+  borrowings     Borrowing[]
+  conversations  Conversation[]
+  reports        Report[]
+  reservations   Reservation[]
+  category       Category          @relation(fields: [categoryId], references: [id])
+  owner          User              @relation("ResourceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  images         ResourceImage[]
+
+  @@index([ownerId])
+  @@index([categoryId])
+  @@index([status])
+  @@index([city])
+  @@index([createdAt])
+}
+
+model ResourceImage {
+  id         String   @id @default(uuid()) @db.Uuid
+  url        String
+  resourceId String   @db.Uuid
+  createdAt  DateTime @default(now())
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@index([resourceId])
+}
+
+model BorrowRequest {
+  id          String              @id @default(uuid()) @db.Uuid
+  resourceId  String              @db.Uuid
+  requesterId String              @db.Uuid
+  message     String?
+  startDate   DateTime
+  endDate     DateTime
+  status      BorrowRequestStatus @default(PENDING)
+  respondedAt DateTime?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  requester   User                @relation("BorrowRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  resource    Resource            @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  reservation Reservation?
+
+  @@index([resourceId])
+  @@index([requesterId])
+  @@index([status])
+  @@index([resourceId, startDate, endDate])
+}
+
+model Reservation {
+  id              String            @id @default(uuid()) @db.Uuid
+  resourceId      String            @db.Uuid
+  userId          String            @db.Uuid
+  borrowRequestId String?           @unique @db.Uuid
+  startDate       DateTime
+  endDate         DateTime
+  status          ReservationStatus @default(PENDING)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  borrowing       Borrowing?
+  borrowRequest   BorrowRequest?    @relation(fields: [borrowRequestId], references: [id])
+  resource        Resource          @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([resourceId])
+  @@index([userId])
+  @@index([status])
+  @@index([resourceId, startDate, endDate])
+}
+
+model Borrowing {
+  id            String          @id @default(uuid()) @db.Uuid
+  resourceId    String          @db.Uuid
+  borrowerId    String          @db.Uuid
+  reservationId String?         @unique @db.Uuid
+  borrowedAt    DateTime        @default(now())
+  dueDate       DateTime
+  returnedAt    DateTime?
+  status        BorrowingStatus @default(ACTIVE)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  borrower      User            @relation(fields: [borrowerId], references: [id], onDelete: Cascade)
+  reservation   Reservation?    @relation(fields: [reservationId], references: [id])
+  resource      Resource        @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  Rating        Rating?
+  review        Review?
+
+  @@index([resourceId])
+  @@index([borrowerId])
+  @@index([status])
+  @@index([borrowerId, status])
+  @@index([dueDate])
+}
+
+model Conversation {
+  id           String                    @id @default(uuid()) @db.Uuid
+  resourceId   String?                   @db.Uuid
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+  resource     Resource?                 @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@index([resourceId])
+}
+
+model ConversationParticipant {
+  id             String       @id @default(uuid()) @db.Uuid
+  conversationId String       @db.Uuid
+  userId         String       @db.Uuid
+  joinedAt       DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id             String       @id @default(uuid()) @db.Uuid
+  content        String
+  conversationId String       @db.Uuid
+  senderId       String       @db.Uuid
+  createdAt      DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
+  @@index([senderId])
+}
+
+model Notification {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @db.Uuid
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  link      String?
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+}
+
+model Review {
+  id          String    @id @default(uuid()) @db.Uuid
+  reviewerId  String    @db.Uuid
+  revieweeId  String    @db.Uuid
+  borrowingId String    @unique @db.Uuid
+  rating      Int
+  comment     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  borrowing   Borrowing @relation(fields: [borrowingId], references: [id], onDelete: Cascade)
+  reviewee    User      @relation("ReviewTarget", fields: [revieweeId], references: [id], onDelete: Cascade)
+  reviewer    User      @relation("ReviewAuthor", fields: [reviewerId], references: [id], onDelete: Cascade)
+
+  @@index([revieweeId])
+  @@index([reviewerId])
+}
+
+model Report {
+  id             String       @id @default(uuid()) @db.Uuid
+  reporterId     String       @db.Uuid
+  reportedUserId String?      @db.Uuid
+  resourceId     String?      @db.Uuid
+  reason         String
+  description    String?
+  status         ReportStatus @default(PENDING)
+  adminNote      String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  reportedUser   User?        @relation("ReportedUser", fields: [reportedUserId], references: [id])
+  reporter       User         @relation("ReportCreator", fields: [reporterId], references: [id], onDelete: Cascade)
+  resource       Resource?    @relation(fields: [resourceId], references: [id])
+
+  @@index([reporterId])
+  @@index([reportedUserId])
+  @@index([resourceId])
+  @@index([status])
+}
+
+model Activity {
+  entityId    String
+  description String
+  createdAt   DateTime @default(now())
+  id          String   @id @db.Uuid
+  userId      String   @db.Uuid
+  action      String
+  entityType  String
+  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([entityType, entityId])
+  @@index([userId])
+}
+
+model CategorySuggestion {
+  id        String                   @id @db.Uuid
+  name      String
+  status    CategorySuggestionStatus @default(PENDING)
+  userId    String                   @db.Uuid
+  createdAt DateTime                 @default(now())
+  User      User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+}
+
+model Rating {
+  id                            String    @id @db.Uuid
+  borrowingId                   String    @unique @db.Uuid
+  raterId                       String    @db.Uuid
+  ratedUserId                   String    @db.Uuid
+  rating                        Int
+  comment                       String?
+  createdAt                     DateTime  @default(now())
+  updatedAt                     DateTime
+  Borrowing                     Borrowing @relation(fields: [borrowingId], references: [id], onDelete: Cascade)
+  User_Rating_ratedUserIdToUser User      @relation("Rating_ratedUserIdToUser", fields: [ratedUserId], references: [id], onDelete: Cascade)
+  User_Rating_raterIdToUser     User      @relation("Rating_raterIdToUser", fields: [raterId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([ratedUserId])
+  @@index([raterId])
+}
 
 enum UserRole {
   USER
@@ -77,386 +354,31 @@ enum ReportStatus {
   REJECTED
 }
 
-// ============================================================
-// USER
-// ============================================================
-
-model User {
-  id           String @id @default(uuid()) @db.Uuid
-  name         String
-  email        String @unique
-  passwordHash String
-
-  imageUrl String?
-  bio      String?
-  phone    String?
-
-  role   UserRole   @default(USER)
-  status UserStatus @default(ACTIVE)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Resources owned by this user
-  resources Resource[] @relation("ResourceOwner")
-
-  // Borrowing requests
-  borrowRequests BorrowRequest[] @relation("BorrowRequester")
-
-  // Reservations
-  reservations Reservation[]
-
-  // Actual borrowings
-  borrowings Borrowing[]
-
-  // Chat
-  conversationParticipants ConversationParticipant[]
-  messages                 Message[]
-
-  // Notifications
-  notifications Notification[]
-
-  // Reviews
-  reviewsWritten  Review[] @relation("ReviewAuthor")
-  reviewsReceived Review[] @relation("ReviewTarget")
-
-  // Reports
-  reportsCreated Report[] @relation("ReportCreator")
-  reportsAgainst Report[] @relation("ReportedUser")
-
-  @@index([status])
-  @@index([role])
+enum ActivityAction {
+  RESOURCE_CREATED
+  RESOURCE_UPDATED
+  RESOURCE_DELETED
+  BORROW_REQUEST_CREATED
+  BORROW_REQUEST_APPROVED
+  BORROW_REQUEST_REJECTED
+  BORROWING_STARTED
+  RESOURCE_RETURNED
+  REPORT_CREATED
+  REPORT_RESOLVED
+  USER_SUSPENDED
+  USER_REACTIVATED
 }
 
-// ============================================================
-// CATEGORY
-// ============================================================
-
-model Category {
-  id          String  @id @default(uuid()) @db.Uuid
-  name        String  @unique
-  description String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  resources Resource[]
+enum ActivityEntityType {
+  RESOURCE
+  BORROW_REQUEST
+  BORROWING
+  REPORT
+  USER
 }
 
-// ============================================================
-// RESOURCE
-// ============================================================
-
-model Resource {
-  id String @id @default(uuid()) @db.Uuid
-
-  title       String
-  description String
-
-  condition ResourceCondition
-  status    ResourceStatus    @default(AVAILABLE)
-
-  location String?
-  city     String?
-
-  ownerId    String @db.Uuid
-  categoryId String @db.Uuid
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  owner User @relation("ResourceOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-
-  category Category @relation(fields: [categoryId], references: [id])
-
-  images ResourceImage[]
-
-  borrowRequests BorrowRequest[]
-  reservations   Reservation[]
-  borrowings     Borrowing[]
-
-  conversations Conversation[]
-
-  reports Report[]
-
-  @@index([ownerId])
-  @@index([categoryId])
-  @@index([status])
-  @@index([city])
-  @@index([createdAt])
-}
-
-// ============================================================
-// RESOURCE IMAGES
-// ============================================================
-
-model ResourceImage {
-  id String @id @default(uuid()) @db.Uuid
-
-  url String
-
-  resourceId String @db.Uuid
-
-  createdAt DateTime @default(now())
-
-  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-
-  @@index([resourceId])
-}
-
-// ============================================================
-// BORROW REQUEST
-// ============================================================
-
-model BorrowRequest {
-  id String @id @default(uuid()) @db.Uuid
-
-  resourceId  String @db.Uuid
-  requesterId String @db.Uuid
-
-  message String?
-
-  startDate DateTime
-  endDate   DateTime
-
-  status BorrowRequestStatus @default(PENDING)
-
-  respondedAt DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-
-  requester User @relation("BorrowRequester", fields: [requesterId], references: [id], onDelete: Cascade)
-
-  reservation Reservation?
-
-  @@index([resourceId])
-  @@index([requesterId])
-  @@index([status])
-  @@index([resourceId, startDate, endDate])
-}
-
-// ============================================================
-// RESERVATION
-// ============================================================
-
-model Reservation {
-  id String @id @default(uuid()) @db.Uuid
-
-  resourceId String @db.Uuid
-  userId     String @db.Uuid
-
-  borrowRequestId String? @unique @db.Uuid
-
-  startDate DateTime
-  endDate   DateTime
-
-  status ReservationStatus @default(PENDING)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  borrowRequest BorrowRequest? @relation(fields: [borrowRequestId], references: [id])
-
-  borrowing Borrowing?
-
-  @@index([resourceId])
-  @@index([userId])
-  @@index([status])
-  @@index([resourceId, startDate, endDate])
-}
-
-// ============================================================
-// BORROWING
-// ============================================================
-
-model Borrowing {
-  id String @id @default(uuid()) @db.Uuid
-
-  resourceId String @db.Uuid
-  borrowerId String @db.Uuid
-
-  reservationId String? @unique @db.Uuid
-
-  borrowedAt DateTime @default(now())
-  dueDate    DateTime
-
-  returnedAt DateTime?
-
-  status BorrowingStatus @default(ACTIVE)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-
-  borrower User @relation(fields: [borrowerId], references: [id], onDelete: Cascade)
-
-  reservation Reservation? @relation(fields: [reservationId], references: [id])
-
-  review Review?
-
-  @@index([resourceId])
-  @@index([borrowerId])
-  @@index([status])
-  @@index([borrowerId, status])
-  @@index([dueDate])
-}
-
-// ============================================================
-// CONVERSATION
-// ============================================================
-
-model Conversation {
-  id String @id @default(uuid()) @db.Uuid
-
-  // Optional: conversation can be related to a resource
-  resourceId String? @db.Uuid
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  resource Resource? @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-
-  participants ConversationParticipant[]
-  messages     Message[]
-
-  @@index([resourceId])
-}
-
-// ============================================================
-// CONVERSATION PARTICIPANT
-// ============================================================
-
-model ConversationParticipant {
-  id String @id @default(uuid()) @db.Uuid
-
-  conversationId String @db.Uuid
-  userId         String @db.Uuid
-
-  joinedAt DateTime @default(now())
-
-  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([conversationId, userId])
-  @@index([userId])
-}
-
-// ============================================================
-// MESSAGE
-// ============================================================
-
-model Message {
-  id String @id @default(uuid()) @db.Uuid
-
-  content String
-
-  conversationId String @db.Uuid
-  senderId       String @db.Uuid
-
-  createdAt DateTime @default(now())
-
-  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
-  sender User @relation(fields: [senderId], references: [id], onDelete: Cascade)
-
-  @@index([conversationId, createdAt])
-  @@index([senderId])
-}
-
-// ============================================================
-// NOTIFICATION
-// ============================================================
-
-model Notification {
-  id String @id @default(uuid()) @db.Uuid
-
-  userId String @db.Uuid
-
-  type NotificationType
-
-  title   String
-  message String
-
-  isRead Boolean @default(false)
-
-  link String?
-
-  createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, isRead])
-  @@index([createdAt])
-}
-
-// ============================================================
-// REVIEW
-// ============================================================
-
-model Review {
-  id String @id @default(uuid()) @db.Uuid
-
-  reviewerId String @db.Uuid
-  revieweeId String @db.Uuid
-
-  borrowingId String @unique @db.Uuid
-
-  rating Int
-
-  comment String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  reviewer User @relation("ReviewAuthor", fields: [reviewerId], references: [id], onDelete: Cascade)
-
-  reviewee User @relation("ReviewTarget", fields: [revieweeId], references: [id], onDelete: Cascade)
-
-  borrowing Borrowing @relation(fields: [borrowingId], references: [id], onDelete: Cascade)
-
-  @@index([revieweeId])
-  @@index([reviewerId])
-}
-
-// ============================================================
-// REPORT
-// ============================================================
-
-model Report {
-  id String @id @default(uuid()) @db.Uuid
-
-  reporterId String @db.Uuid
-
-  reportedUserId String? @db.Uuid
-  resourceId     String? @db.Uuid
-
-  reason      String
-  description String?
-
-  status ReportStatus @default(PENDING)
-
-  adminNote String?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  reporter User @relation("ReportCreator", fields: [reporterId], references: [id], onDelete: Cascade)
-
-  reportedUser User? @relation("ReportedUser", fields: [reportedUserId], references: [id])
-
-  resource Resource? @relation(fields: [resourceId], references: [id])
-
-  @@index([reporterId])
-  @@index([reportedUserId])
-  @@index([resourceId])
-  @@index([status])
+enum CategorySuggestionStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }

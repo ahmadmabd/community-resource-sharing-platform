@@ -8,6 +8,7 @@ import BorrowRequestsSection from "@/components/dashboard/BorrowRequestsSection"
 import ReservationsSection from "@/components/dashboard/ReservationsSection";
 import BorrowingsSection from "@/components/dashboard/BorrowingsSection";
 import ActivitySection from "@/components/dashboard/ActivitySection";
+import { prisma } from "@/lib/prisma";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -16,10 +17,35 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
+  const user = await prisma.user.findUnique({
+    where: {
+      // id: session.user.id,
+      id: "009dd114-8983-4b5c-b2c8-f2f81dd90290",
+    },
+    select: {
+      id: true,
+      name: true,
+      bio: true,
+      imageUrl: true,
+      phone: true,
+      location: true,
+    },
+  });
+
+  if (!user) {
+    redirect("/login");
+  }
   return (
     <main className="min-h-screen bg-gray-50 p-8">
       <div className="mx-auto max-w-7xl space-y-8">
-        <DashboardHeader userName={session.user.name ?? ""} />
+        <DashboardHeader
+          userName={user.name ?? ""}
+          userId={user.id ?? ""}
+          userBio={user.bio ?? ""}
+          userImage={user.imageUrl ?? ""}
+          userPhone={user.phone ?? ""}
+          userLocation={user.location ?? ""}
+        />
 
         <StatsCards />
 
