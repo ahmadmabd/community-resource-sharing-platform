@@ -1,7 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Pencil } from "lucide-react";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 interface ProfilePageProps {
   params: Promise<{
@@ -9,159 +11,169 @@ interface ProfilePageProps {
   }>;
 }
 
-export const mockUserProfile = {
-  id: "user-001",
-
-  name: "Zakaria Hammoud",
-
-  email: "zakaria@example.com",
-
-  image: "src",
-
-  location: "Akkar, Lebanon",
-
-  bio: "Full-Stack Developer and community member interested in technology, education, and resource sharing.",
-
-  joinDate: "September 1, 2026",
-
-  rating: 4.8,
-
-  trustScore: 92,
-
-  resourcesCount: 12,
-
-  totalBorrowings: 18,
-
-  completedBorrowings: 16,
-
-  resources: [
-    {
-      id: "resource-001",
-      name: "Canon Camera",
-      category: "Electronics",
-      description: "Canon DSLR camera available for community members.",
-      status: "Available",
-      image: "/images/camera.jpg",
-    },
-    {
-      id: "resource-002",
-      name: "MacBook Pro",
-      category: "Computers",
-      description: "MacBook Pro available for short-term educational use.",
-      status: "Borrowed",
-      image: "/images/macbook.jpg",
-    },
-    {
-      id: "resource-003",
-      name: "Programming Book",
-      category: "Books",
-      description: "Modern programming and software development book.",
-      status: "Available",
-      image: "/images/programming-book.jpg",
-    },
-    {
-      id: "resource-004",
-      name: "Power Drill",
-      category: "Tools",
-      description: "Power drill available for community projects.",
-      status: "Reserved",
-      image: "/images/drill.jpg",
-    },
-  ],
-};
-
 export default async function UserProfilePage({ params }: ProfilePageProps) {
-  //   const { id } = await params;
+  const { id } = await params;
 
-  const user = mockUserProfile;
+  // Get current logged-in session
+  const session = await getServerSession(authOptions);
 
+  // Get the user from Prisma
+  const user = await prisma.user.findUnique({
+    where: {
+      id,
+    },
+    include: {
+      resources: {
+        include: {
+          category: true,
+        },
+      },
+    },
+  });
+  const ratings = await prisma.rating.findMany({
+    where: {
+      ratedUserId: id,
+    },
+    select: {
+      rating: true,
+    },
+  });
+  const averageRating =
+    ratings.length > 0
+      ? ratings.reduce((sum, item) => sum + item.rating, 0) / ratings.length
+      : 0;
   if (!user) {
     notFound();
   }
 
+  // Check if this profile belongs to the logged-in user
+  const isOwner = session?.user?.id === user.id;
+
   return (
     <main className="min-h-screen bg-gray-50 p-6 sm:p-8">
       <div className="mx-auto max-w-5xl space-y-6">
+        {/* Back */}
         <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900 transition-colors"
+          href="/dashboard"
+          className="inline-flex items-center gap-2 text-sm text-gray-500 transition-colors hover:text-gray-900"
         >
-          <ArrowLeft size={16} /> Back to home
+          <ArrowLeft size={16} />
+          Back to dashboard
         </Link>
 
+        {/* Profile Header */}
         <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="flex items-center gap-5">
-            {user.image ? (
-              <img
-                src={user.image}
-                alt={user.name ?? "User"}
-                className="h-24 w-24 rounded-full object-cover"
-              />
-            ) : (
-              <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gray-900 text-3xl font-bold text-white">
-                {(user.name ?? "U").charAt(0).toUpperCase()}
+          <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+            {/* Left side */}
+            <div className="flex items-center gap-5">
+              {/* Profile Image */}
+              {user.imageUrl ? (
+                <img
+                  src={user.imageUrl}
+                  alt={user.name ?? "User"}
+                  className="h-24 w-24 rounded-full object-cover"
+                />
+              ) : (
+                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gray-900 text-3xl font-bold text-white">
+                  {(user.name ?? "U").charAt(0).toUpperCase()}
+                </div>
+              )}
+
+              {/* User Information */}
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {user.name}
+                </h1>
+                {user.location && (
+                  <p className="mt-1 text-sm text-gray-500">
+                    📍 {user.location}
+                  </p>
+                )}
+                {user.phone && (
+                  <p className="mt-1 text-sm text-gray-500">📞 {user.phone}</p>
+                )}
+
+                {user.bio && (
+                  <p className="mt-3 max-w-2xl text-sm text-gray-600">
+                    {user.bio}
+                  </p>
+                )}
               </div>
-            )}
-
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">{user.name}</h1>
-
-              {user.location && (
-                <p className="mt-1 text-sm text-gray-500">📍 {user.location}</p>
-              )}
-
-              {user.bio && (
-                <p className="mt-3 text-sm text-gray-600">{user.bio}</p>
-              )}
             </div>
+
+            {/* Edit button */}
+            {isOwner && (
+              <Link
+                href={`/user/${user.id}/edit`}
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-gray-800"
+              >
+                <Pencil size={16} />
+                Edit Profile
+              </Link>
+            )}
           </div>
         </section>
 
+        {/* Statistics */}
         <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {/* Resources */}
           <div className="rounded-xl border border-gray-200 bg-white p-5">
             <p className="text-sm text-gray-500">Resources</p>
 
-            <p className="mt-2 text-2xl font-bold  text-gray-500">
+            <p className="mt-2 text-2xl font-bold text-gray-900">
               {user.resources.length}
             </p>
           </div>
 
+          {/* Rating */}
           <div className="rounded-xl border border-gray-200 bg-white p-5">
             <p className="text-sm text-gray-500">Rating</p>
 
-            <p className="mt-2 text-2xl font-bold  text-gray-500">⭐ 4.8</p>
+            <p className="mt-2 text-2xl font-bold text-gray-900">
+              ⭐ ⭐ {averageRating.toFixed(1)}
+            </p>
           </div>
 
+          {/* Trust Score */}
           <div className="rounded-xl border border-gray-200 bg-white p-5">
-            <p className="text-sm text-gray-500  text-gray-500">Trust Score</p>
+            <p className="text-sm text-gray-500">Trust Score</p>
 
-            <p className="mt-2 text-2xl font-bold  text-gray-500">96%</p>
+            <p className="mt-2 text-2xl font-bold text-gray-900">N/A</p>
           </div>
         </section>
 
+        {/* Resources */}
         <section className="rounded-xl border border-gray-200 bg-white p-6">
-          <h2 className="text-xl font-semibold  text-gray-500">Resources</h2>
+          <h2 className="text-xl font-semibold text-gray-900">Resources</h2>
 
-          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2  text-gray-500">
-            {user.resources.map((resource) => (
-              <div
-                key={resource.id}
-                className="rounded-lg border border-gray-200 p-4"
-              >
-                <h3 className="font-medium">{resource.name}</h3>
+          {user.resources.length === 0 ? (
+            <p className="mt-5 text-sm text-gray-500">
+              This user has no resources yet.
+            </p>
+          ) : (
+            <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {user.resources.map((resource) => (
+                <div
+                  key={resource.id}
+                  className="rounded-lg border border-gray-200 p-4"
+                >
+                  <h3 className="font-medium text-gray-900">
+                    {resource.title}
+                  </h3>
 
-                <p className="mt-1 text-sm text-gray-500">
-                  {resource.category}
-                </p>
-
-                {resource.description && (
-                  <p className="mt-3 text-sm text-gray-600">
-                    {resource.description}
+                  <p className="mt-1 text-sm text-gray-500">
+                    {resource.category.name}
                   </p>
-                )}
-              </div>
-            ))}
-          </div>
+
+                  {resource.description && (
+                    <p className="mt-3 text-sm text-gray-600">
+                      {resource.description}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </section>
       </div>
     </main>
