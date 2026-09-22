@@ -1,4 +1,3 @@
-import ProfileForm from "@/components/user/ProfileForm";
 import ProfileStats from "@/components/user/ProfileStats";
 import ProfileResources from "@/components/user/ProfileResources";
 
@@ -14,10 +13,7 @@ export default function UserPage() {
           </p>
         </div>
 
-        <ProfileForm />
-
         <ProfileStats />
-
         <ProfileResources />
       </div>
     </main>

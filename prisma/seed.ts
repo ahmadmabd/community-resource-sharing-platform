@@ -332,6 +332,17 @@ async function main() {
     },
   });
 
+  const thirdBorrowing = await prisma.borrowing.create({
+    data: {
+      resourceId: football.id,
+      borrowerId: john.id,
+      borrowedAt: new Date("2026-09-10"),
+      dueDate: new Date("2026-09-15"),
+      returnedAt: new Date("2026-09-15"),
+      status: "RETURNED",
+    },
+  });
+
   console.log("🤝 Borrowings created");
 
   // ============================================================
@@ -493,6 +504,41 @@ async function main() {
       active: activeBorrowing.id,
     },
   });
+
+  // ============================================================
+  // RATINGS
+  // ============================================================
+
+  await prisma.rating.createMany({
+    data: [
+      {
+        borrowingId: borrowing.id,
+        raterId: ahmad.id,
+        ratedUserId: john.id,
+        rating: 5,
+        comment:
+          "Great experience. John was very helpful and the camera was in excellent condition.",
+      },
+      {
+        borrowingId: activeBorrowing.id,
+        raterId: sara.id,
+        ratedUserId: ahmad.id,
+        rating: 4,
+        comment:
+          "Good experience. The book was in very good condition and Ahmad was helpful.",
+      },
+      {
+        borrowingId: thirdBorrowing.id,
+        raterId: john.id,
+        ratedUserId: michael.id,
+        rating: 5,
+        comment:
+          "Excellent experience. Michael was friendly and the football was in great condition.",
+      },
+    ],
+  });
+
+  console.log("⭐ Ratings created");
 }
 
 main()
