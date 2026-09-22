@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 import { ArrowLeft } from "lucide-react";
+import UserSearch from "./UserSearch";
 
 export default async function MessagesPage() {
   const session = await getServerSession(authOptions);
@@ -52,14 +53,12 @@ export default async function MessagesPage() {
   <MessageCircle size={24} color="#0F4C35" />
   <h1 className="text-2xl font-semibold text-gray-900">Messages</h1>
 </div>
+        <UserSearch />
         <div className="flex flex-col gap-3">
           {conversations.length === 0 ? (
             <div className="text-center py-16">
               <MessageCircle size={40} className="mx-auto text-gray-300 mb-3" />
               <p className="text-gray-400 text-sm">No conversations yet</p>
-              <Link href="/" className="text-[#0F4C35] text-sm font-medium hover:underline mt-2 inline-block">
-                Find people to chat with
-              </Link>
             </div>
           ) : (
             conversations.map((conversation) => {

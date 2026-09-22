@@ -8,34 +8,36 @@ datasource db {
 }
 
 model User {
-  id                              String                    @id @default(uuid()) @db.Uuid
-  name                            String
-  email                           String                    @unique
-  passwordHash                    String
-  imageUrl                        String?
-  bio                             String?
-  phone                           String?
-  role                            UserRole                  @default(USER)
-  status                          UserStatus                @default(ACTIVE)
-  createdAt                       DateTime                  @default(now())
-  updatedAt                       DateTime                  @updatedAt
-  suspendReason                   String?
-  location                        String?
-  Activity                        Activity[]
-  borrowRequests                  BorrowRequest[]           @relation("BorrowRequester")
-  borrowings                      Borrowing[]
-  CategorySuggestion              CategorySuggestion[]
-  conversationParticipants        ConversationParticipant[]
-  messages                        Message[]
-  notifications                   Notification[]
-  Rating_Rating_ratedUserIdToUser Rating[]                  @relation("Rating_ratedUserIdToUser")
-  Rating_Rating_raterIdToUser     Rating[]                  @relation("Rating_raterIdToUser")
-  reportsAgainst                  Report[]                  @relation("ReportedUser")
-  reportsCreated                  Report[]                  @relation("ReportCreator")
-  reservations                    Reservation[]
-  resources                       Resource[]                @relation("ResourceOwner")
-  reviewsReceived                 Review[]                  @relation("ReviewTarget")
-  reviewsWritten                  Review[]                  @relation("ReviewAuthor")
+  id            String     @id @default(uuid()) @db.Uuid
+  name          String
+  email         String     @unique
+  passwordHash  String
+  imageUrl      String?
+  bio           String?
+  phone         String?
+  location      String?
+  role          UserRole   @default(USER)
+  status        UserStatus @default(ACTIVE)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  suspendReason String?
+
+  borrowRequests           BorrowRequest[]           @relation("BorrowRequester")
+  borrowings               Borrowing[]
+  categorySuggestions      CategorySuggestion[]
+  conversationParticipants ConversationParticipant[]
+  messages                 Message[]
+  notifications            Notification[]
+  activities               Activity[]
+  reportsAgainst           Report[]                  @relation("ReportedUser")
+  reportsCreated           Report[]                  @relation("ReportCreator")
+  reservations             Reservation[]
+  resources                Resource[]                @relation("ResourceOwner")
+  reviewsReceived          Review[]                  @relation("ReviewTarget")
+  reviewsWritten           Review[]                  @relation("ReviewAuthor")
+
+  ratingsGiven    Rating[] @relation("RatingRater")
+  ratingsReceived Rating[] @relation("RatingReceiver")
 
   @@index([status])
   @@index([role])
@@ -48,6 +50,17 @@ model Category {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   resources   Resource[]
+}
+
+model CategorySuggestion {
+  id        String                   @id @default(uuid()) @db.Uuid
+  name      String
+  status    CategorySuggestionStatus @default(PENDING)
+  userId    String                   @db.Uuid
+  createdAt DateTime                 @default(now())
+  user      User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
 }
 
 model Resource {
@@ -144,8 +157,8 @@ model Borrowing {
   borrower      User            @relation(fields: [borrowerId], references: [id], onDelete: Cascade)
   reservation   Reservation?    @relation(fields: [reservationId], references: [id])
   resource      Resource        @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-  Rating        Rating?
   review        Review?
+  rating        Rating?
 
   @@index([resourceId])
   @@index([borrowerId])
@@ -245,47 +258,79 @@ model Report {
 }
 
 model Activity {
-  entityId    String
-  description String
-  createdAt   DateTime @default(now())
-  id          String   @id @db.Uuid
+  id          String   @id @default(uuid()) @db.Uuid
   userId      String   @db.Uuid
   action      String
   entityType  String
-  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  entityId    String
+  description String
+  createdAt   DateTime @default(now())
 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
   @@index([createdAt])
   @@index([entityType, entityId])
-  @@index([userId])
-}
-
-model CategorySuggestion {
-  id        String                   @id @db.Uuid
-  name      String
-  status    CategorySuggestionStatus @default(PENDING)
-  userId    String                   @db.Uuid
-  createdAt DateTime                 @default(now())
-  User      User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([status])
 }
 
 model Rating {
-  id                            String    @id @db.Uuid
-  borrowingId                   String    @unique @db.Uuid
-  raterId                       String    @db.Uuid
-  ratedUserId                   String    @db.Uuid
-  rating                        Int
-  comment                       String?
-  createdAt                     DateTime  @default(now())
-  updatedAt                     DateTime
-  Borrowing                     Borrowing @relation(fields: [borrowingId], references: [id], onDelete: Cascade)
-  User_Rating_ratedUserIdToUser User      @relation("Rating_ratedUserIdToUser", fields: [ratedUserId], references: [id], onDelete: Cascade)
-  User_Rating_raterIdToUser     User      @relation("Rating_raterIdToUser", fields: [raterId], references: [id], onDelete: Cascade)
+  id String @id @default(uuid()) @db.Uuid
 
-  @@index([createdAt])
-  @@index([ratedUserId])
+  // The borrowing that this rating belongs to
+  borrowingId String @unique @db.Uuid
+
+  // User who gives the rating
+  raterId String @db.Uuid
+
+  // User who receives the rating
+  ratedUserId String @db.Uuid
+
+  // 1 - 5 stars
+  rating Int
+
+  // Optional written review
+  comment String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  borrowing Borrowing @relation(fields: [borrowingId], references: [id], onDelete: Cascade)
+
+  rater User @relation("RatingRater", fields: [raterId], references: [id], onDelete: Cascade)
+
+  ratedUser User @relation("RatingReceiver", fields: [ratedUserId], references: [id], onDelete: Cascade)
+
   @@index([raterId])
+  @@index([ratedUserId])
+  @@index([createdAt])
+}
+
+enum ActivityAction {
+  RESOURCE_CREATED
+  RESOURCE_UPDATED
+  RESOURCE_DELETED
+
+  BORROW_REQUEST_CREATED
+  BORROW_REQUEST_APPROVED
+  BORROW_REQUEST_REJECTED
+
+  BORROWING_STARTED
+  RESOURCE_RETURNED
+
+  REPORT_CREATED
+  REPORT_RESOLVED
+
+  USER_SUSPENDED
+  USER_REACTIVATED
+}
+
+enum ActivityEntityType {
+  RESOURCE
+  BORROW_REQUEST
+  BORROWING
+  REPORT
+  USER
 }
 
 enum UserRole {
@@ -352,29 +397,6 @@ enum ReportStatus {
   REVIEWING
   RESOLVED
   REJECTED
-}
-
-enum ActivityAction {
-  RESOURCE_CREATED
-  RESOURCE_UPDATED
-  RESOURCE_DELETED
-  BORROW_REQUEST_CREATED
-  BORROW_REQUEST_APPROVED
-  BORROW_REQUEST_REJECTED
-  BORROWING_STARTED
-  RESOURCE_RETURNED
-  REPORT_CREATED
-  REPORT_RESOLVED
-  USER_SUSPENDED
-  USER_REACTIVATED
-}
-
-enum ActivityEntityType {
-  RESOURCE
-  BORROW_REQUEST
-  BORROWING
-  REPORT
-  USER
 }
 
 enum CategorySuggestionStatus {

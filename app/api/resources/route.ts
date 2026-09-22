@@ -1,114 +1,104 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-
-import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/auth";
-import { resourceSchema } from "@/lib/validations/resource";
+import { prisma } from "@/lib/prisma";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const resources = await prisma.resource.findMany({
-      include: {
-        category: true,
-        owner: {
-          select: {
-            id: true,
-            name: true,
-            imageUrl: true,
+    const { searchParams } = req.nextUrl;
+    const search = searchParams.get("search") || "";
+    const category = searchParams.get("category") || "";
+    const condition = searchParams.get("condition") || "";
+    const city = searchParams.get("city") || "";
+    const startDate = searchParams.get("startDate") || "";
+    const endDate = searchParams.get("endDate") || "";
+
+    const where: any = {
+      status: "AVAILABLE",
+      ...(search && {
+        OR: [
+          { title: { contains: search, mode: "insensitive" } },
+          { description: { contains: search, mode: "insensitive" } },
+        ],
+      }),
+      ...(category && { category: { name: { equals: category, mode: "insensitive" } } }),
+      ...(condition && { condition: condition as any }),
+      ...(city && { city: { contains: city, mode: "insensitive" } }),
+      ...(startDate && endDate && {
+        NOT: {
+          reservations: {
+            some: {
+              status: { in: ["CONFIRMED", "PENDING"] },
+              startDate: { lte: new Date(endDate) },
+              endDate: { gte: new Date(startDate) },
+            },
           },
         },
-        images: true,
+      }),
+    };
+
+    const resources = await prisma.resource.findMany({
+      where,
+      include: {
+        images: { take: 1 },
+        category: { select: { id: true, name: true } },
+        owner: { select: { id: true, name: true } },
+        reservations: {
+          where: { status: { in: ["CONFIRMED", "PENDING"] } },
+          select: { startDate: true, endDate: true },
+        },
       },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ data: resources }, { status: 200 });
+    return NextResponse.json(resources);
   } catch (error) {
-    console.error("Error fetching resources:", error);
-
-    return NextResponse.json(
-      { message: "Failed to fetch resources" },
-      { status: 500 },
-    );
+    console.error(error);
+    return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json();
+    const body = await req.json();
+    const { title, description, condition, categoryId, city, location, imageUrl } = body;
 
-    const result = resourceSchema.safeParse(body);
-
-    if (!result.success) {
-      return NextResponse.json(
-        {
-          message: "Invalid resource data",
-          errors: result.error.flatten(),
-        },
-        { status: 400 },
-      );
+    if (!title || !description || !condition || !categoryId) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const category = await prisma.category.findUnique({
-      where: {
-        id: result.data.categoryId,
-      },
-    });
-
-    if (!category) {
-      return NextResponse.json(
-        { message: "Category not found" },
-        { status: 404 },
-      );
-    }
-
-    // 1. Create the resource
-    const newResource = await prisma.resource.create({
+    const resource = await prisma.resource.create({
       data: {
-        title: result.data.title,
-        description: result.data.description,
-        condition: result.data.condition,
-        categoryId: result.data.categoryId,
-        location: result.data.location,
-        city: result.data.city,
+        title,
+        description,
+        condition,
+        categoryId,
+        city,
+        location,
         ownerId: session.user.id,
+        ...(imageUrl && {
+          images: {
+            create: {
+              url: imageUrl,
+            },
+          },
+        }),
       },
       include: {
+        images: true,
         category: true,
+        owner: { select: { id: true, name: true } },
       },
     });
 
-    // 2. Create the image if the user uploaded one
-    if (result.data.imageUrl) {
-      await prisma.resourceImage.create({
-        data: {
-          url: result.data.imageUrl,
-          resourceId: newResource.id,
-        },
-      });
-    }
-
-    return NextResponse.json(
-      {
-        message: "Resource created successfully",
-        data: newResource,
-      },
-      { status: 201 },
-    );
+    return NextResponse.json(resource, { status: 201 });
   } catch (error) {
-    console.error("Error creating resource:", error);
-
-    return NextResponse.json(
-      { message: "Something went wrong" },
-      { status: 500 },
-    );
+    console.error(error);
+    return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
   }
 }
