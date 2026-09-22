@@ -62,6 +62,17 @@ export async function PATCH(
           where: { id },
           data: { status: "REJECTED" },
         });
+
+        await prisma.notification.create({
+          data: {
+            userId: borrowRequest.requesterId,
+            type: "REQUEST_REJECTED",
+            title: "Borrow request declined",
+            message: `Your request for "${borrowRequest.resource.title}" was not approved`,
+            link: `/borrow-requests`,
+          },
+        });
+
         return NextResponse.json(updated);
       }
 
@@ -83,6 +94,16 @@ export async function PATCH(
         });
 
         return updatedRequest;
+      });
+
+      await prisma.notification.create({
+        data: {
+          userId: borrowRequest.requesterId,
+          type: "REQUEST_APPROVED",
+          title: "Borrow request approved!",
+          message: `Your request for "${borrowRequest.resource.title}" has been approved`,
+          link: `/reservations`,
+        },
       });
 
       return NextResponse.json(updated);

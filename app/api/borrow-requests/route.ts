@@ -111,6 +111,16 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    await prisma.notification.create({
+      data: {
+        userId: resource.ownerId,
+        type: "BORROW_REQUEST",
+        title: "New borrow request",
+        message: `${session.user.name} wants to borrow your "${resource.title}"`,
+        link: `/borrow-requests/received`,
+      },
+    });
+
     return NextResponse.json(borrowRequest, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Something went wrong" }, { status: 500 });

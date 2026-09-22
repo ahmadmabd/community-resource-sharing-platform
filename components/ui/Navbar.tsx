@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { Search, MessageCircle, Bell, LayoutDashboard, LogOut, User, ChevronDown, Menu, Home } from "lucide-react";
 
@@ -17,8 +18,13 @@ type NavbarProps = {
 };
 
 export default function Navbar({ session }: NavbarProps) {
+  const router = useRouter();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -30,6 +36,49 @@ export default function Navbar({ session }: NavbarProps) {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    if (session) {
+      fetchNotifications();
+    }
+  }, [session]);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setNotifOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  async function fetchNotifications() {
+    try {
+      const res = await fetch("/api/notifications");
+      const data = await res.json();
+      setNotifications(data.notifications || []);
+      setUnreadCount(data.unreadCount || 0);
+    } catch {}
+  }
+
+  async function markAllRead() {
+    try {
+      await fetch("/api/notifications/read-all", { method: "PATCH" });
+      setUnreadCount(0);
+      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    } catch {}
+  }
+
+  async function markOneRead(id: string, link?: string) {
+    try {
+      await fetch(`/api/notifications/${id}`, { method: "PATCH" });
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, isRead: true } : n)));
+      if (link) router.push(link);
+      setNotifOpen(false);
+    } catch {}
+  }
 
   const dashboardHref = session?.user?.role === "ADMIN" ? "/admin" : "/dashboard";
 
@@ -54,9 +103,78 @@ export default function Navbar({ session }: NavbarProps) {
       <div className="flex items-center gap-3">
         {session ? (
           <>
-            <Link href="/notifications" className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors text-gray-500">
-              <Bell size={18} />
-            </Link>
+            <div className="relative" ref={notifRef}>
+              <button
+                onClick={() => setNotifOpen(!notifOpen)}
+                className="relative w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors text-gray-500 cursor-pointer"
+              >
+                <Bell size={18} />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </button>
+
+              {notifOpen && (
+                <div className="absolute right-0 top-10 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                    <p className="text-sm font-semibold text-[#0A1A12]">Notifications</p>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={markAllRead}
+                        className="text-xs text-[#5BB88A] hover:text-[#0F4C35] cursor-pointer"
+                      >
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="max-h-80 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <div className="py-8 text-center text-gray-400 text-sm">
+                        No notifications yet
+                      </div>
+                    ) : (
+                      notifications.slice(0, 10).map((notif) => (
+                        <button
+                          key={notif.id}
+                          onClick={() => markOneRead(notif.id, notif.link)}
+                          className={`w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0 cursor-pointer ${
+                            !notif.isRead ? "bg-[#5BB88A]/5" : ""
+                          }`}
+                        >
+                          <div className="flex items-start gap-2">
+                            {!notif.isRead && (
+                              <span className="w-2 h-2 bg-[#5BB88A] rounded-full mt-1.5 shrink-0" />
+                            )}
+                            <div className={!notif.isRead ? "" : "ml-4"}>
+                              <p className="text-xs font-medium text-[#0A1A12]">{notif.title}</p>
+                              <p className="text-xs text-gray-500 mt-0.5">{notif.message}</p>
+                              <p className="text-xs text-gray-300 mt-1">
+                                {new Date(notif.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                              </p>
+                            </div>
+                          </div>
+                        </button>
+                      ))
+                    )}
+                  </div>
+
+                  {notifications.length > 0 && (
+                    <div className="px-4 py-2.5 border-t border-gray-100">
+                      <Link
+                        href="/notifications"
+                        onClick={() => setNotifOpen(false)}
+                        className="text-xs text-[#5BB88A] hover:text-[#0F4C35] font-medium"
+                      >
+                        View all notifications →
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
             <div className="relative" ref={dropdownRef}>
               <button

@@ -120,6 +120,25 @@ export async function POST(
       data: { updatedAt: new Date() },
     });
 
+    const otherParticipant = await prisma.conversationParticipant.findFirst({
+      where: {
+        conversationId,
+        userId: { not: session.user.id },
+      },
+    });
+
+    if (otherParticipant) {
+      await prisma.notification.create({
+        data: {
+          userId: otherParticipant.userId,
+          type: "NEW_MESSAGE",
+          title: "New message",
+          message: `${session.user.name} sent you a message`,
+          link: `/messages/${conversationId}`,
+        },
+      });
+    }
+
     return NextResponse.json(message, { status: 201 });
   } catch (error) {
     console.error("Send message error:", error);
