@@ -20,6 +20,7 @@ export async function GET(req: NextRequest) {
         AND: [
           { id: { not: session.user.id } },
           { status: "ACTIVE" },
+          { role: "USER" },
           {
             OR: [
               { name: { contains: q, mode: "insensitive" } },
