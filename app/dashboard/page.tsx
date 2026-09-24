@@ -4,11 +4,12 @@ import { redirect } from "next/navigation";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import StatsCards from "@/components/dashboard/StatsCards";
 import ResourcesSection from "@/components/dashboard/ResourcesSection";
-import BorrowRequestsSection from "@/components/dashboard/BorrowRequestsSection";
+import BorrowRequestsSection from "@/components/dashboard/IncomingBorrowRequests";
 import ReservationsSection from "@/components/dashboard/ReservationsSection";
 import BorrowingsSection from "@/components/dashboard/BorrowingsSection";
 import ActivitySection from "@/components/dashboard/ActivitySection";
 import { prisma } from "@/lib/prisma";
+import MyBorrowRequests from "@/components/dashboard/MyBorrowRequests";
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -19,8 +20,7 @@ export default async function DashboardPage() {
 
   const user = await prisma.user.findUnique({
     where: {
-      // id: session.user.id,
-      id: "009dd114-8983-4b5c-b2c8-f2f81dd90290",
+      id: session.user.id,
     },
     select: {
       id: true,
@@ -57,6 +57,9 @@ export default async function DashboardPage() {
         <div className="grid gap-6 lg:grid-cols-2">
           <ReservationsSection />
           <BorrowingsSection />
+        </div>
+        <div className="grid gap-6 lg:grid-cols-1">
+          <MyBorrowRequests />
         </div>
 
         <ActivitySection />

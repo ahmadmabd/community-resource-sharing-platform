@@ -53,14 +53,6 @@ export default async function ReservationsSection() {
             Your upcoming resource reservations.
           </p>
         </div>
-
-        <Link
-          href="/reservations"
-          className="flex items-center gap-1 text-sm font-medium text-gray-700 hover:text-gray-900"
-        >
-          View all
-          <ArrowRight size={16} />
-        </Link>
       </div>
 
       {/* Reservations */}

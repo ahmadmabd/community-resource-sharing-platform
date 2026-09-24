@@ -12,7 +12,6 @@ export default async function ResourcesSection() {
   }
 
   const userId = session.user.id;
-  // const userId = "009dd114-8983-4b5c-b2c8-f2f81dd90290";
 
   const resources = await prisma.resource.findMany({
     where: {
@@ -40,7 +39,7 @@ export default async function ResourcesSection() {
         </div>
 
         <Link
-          href="/resources"
+          href="dashboard/resources"
           className="flex items-center gap-1 text-sm font-medium text-gray-700 hover:text-gray-900"
         >
           View all
