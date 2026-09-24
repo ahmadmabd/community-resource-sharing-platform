@@ -26,6 +26,7 @@ function getActivityIcon(action: string) {
 
     case "approved":
     case "approve":
+    case "request_approved":
       return <CheckCircle2 size={18} />;
 
     case "return":
@@ -76,8 +77,7 @@ export default async function ActivitySection() {
     return null;
   }
 
-  // const userId = session.user.id;
-  const userId = "009dd114-8983-4b5c-b2c8-f2f81dd90290";
+  const userId = session.user.id;
 
   const activities = await prisma.activity.findMany({
     where: {
