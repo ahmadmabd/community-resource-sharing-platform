@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import { successToastStyle } from "@/lib/toastStyles";
 
 type BorrowRequest = {
   id: string;
@@ -36,8 +39,31 @@ type BorrowRequest = {
 };
 
 export default function MyBorrowRequests() {
+  const router = useRouter();
   const [requests, setRequests] = useState<BorrowRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [cancelling, setCancelling] = useState<string | null>(null);
+
+  async function handleCancel(requestId: string) {
+    setCancelling(requestId);
+    try {
+      const res = await fetch(`/api/borrow-requests/${requestId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "CANCEL" }),
+      });
+      if (!res.ok) {
+        toast.error("Failed to cancel request", successToastStyle);
+        return;
+      }
+      toast.success("Request cancelled", successToastStyle);
+      router.refresh();
+    } catch {
+      toast.error("Something went wrong", successToastStyle);
+    } finally {
+      setCancelling(null);
+    }
+  }
 
   useEffect(() => {
     async function loadRequests() {
@@ -136,7 +162,7 @@ export default function MyBorrowRequests() {
               </div>
 
               {/* Status */}
-              <div>
+              <div className="flex items-center gap-2">
                 <span
                   className={`inline-flex rounded-full px-3 py-1 text-sm font-medium ${
                     request.status === "PENDING"
@@ -150,6 +176,16 @@ export default function MyBorrowRequests() {
                 >
                   {request.status}
                 </span>
+
+                {request.status === "PENDING" && (
+                  <button
+                    onClick={() => handleCancel(request.id)}
+                    disabled={cancelling === request.id}
+                    className="text-xs text-red-500 border border-red-200 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {cancelling === request.id ? "Cancelling..." : "Cancel"}
+                  </button>
+                )}
               </div>
             </div>
           ))}

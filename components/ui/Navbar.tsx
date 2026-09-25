@@ -190,18 +190,6 @@ export default function Navbar({ session }: NavbarProps) {
                       ))
                     )}
                   </div>
-
-                  {notifications.length > 0 && (
-                    <div className="px-4 py-2.5 border-t border-gray-100">
-                      <Link
-                        href="/notifications"
-                        onClick={() => setNotifOpen(false)}
-                        className="text-xs text-[#5BB88A] hover:text-[#0F4C35] font-medium"
-                      >
-                        View all notifications →
-                      </Link>
-                    </div>
-                  )}
                 </div>
               )}
             </div>
