@@ -10,6 +10,30 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // const requests = await prisma.borrowRequest.findMany({
+    //   where: {
+    //     resource: {
+    //       ownerId: session.user.id,
+    //     },
+    //   },
+    //   include: {
+    //     resource: {
+    //       select: {
+    //         id: true,
+    //         title: true,
+    //         images: { take: 1 },
+    //       },
+    //     },
+    //     requester: {
+    //       select: {
+    //         id: true,
+    //         name: true,
+    //         email: true,
+    //       },
+    //     },
+    //   },
+    //   orderBy: { createdAt: "desc" },
+    // });
     const requests = await prisma.borrowRequest.findMany({
       where: {
         resource: {
@@ -17,26 +41,33 @@ export async function GET() {
         },
       },
       include: {
-        resource: {
-          select: {
-            id: true,
-            title: true,
-            images: { take: 1 },
-          },
-        },
         requester: {
           select: {
             id: true,
             name: true,
-            email: true,
+            imageUrl: true,
           },
         },
-      },
-      orderBy: { createdAt: "desc" },
-    });
 
+        resource: {
+          include: {
+            category: true,
+            images: true,
+          },
+        },
+
+        reservation: true,
+      },
+
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
     return NextResponse.json(requests);
   } catch {
-    return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Something went wrong" },
+      { status: 500 },
+    );
   }
 }
