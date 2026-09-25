@@ -32,6 +32,10 @@ export default async function ResourceDetailPage({
         where: { status: { in: ["CONFIRMED", "PENDING"] } },
         select: { startDate: true, endDate: true },
       },
+      borrowings: {
+        where: { status: "ACTIVE" },
+        select: { borrowedAt: true, dueDate: true },
+      },
     },
   });
 

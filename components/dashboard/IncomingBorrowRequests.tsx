@@ -42,6 +42,10 @@ export default function IncomingBorrowRequests() {
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [error, setError] = useState("");
+  const [confirmModal, setConfirmModal] = useState<{
+    id: string;
+    action: "APPROVE" | "REJECT";
+  } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -85,15 +89,6 @@ export default function IncomingBorrowRequests() {
     requestId: string,
     action: "APPROVE" | "REJECT",
   ) {
-    const message =
-      action === "APPROVE"
-        ? "Approve this borrow request?"
-        : "Reject this borrow request?";
-
-    if (!window.confirm(message)) {
-      return;
-    }
-
     try {
       setProcessingId(requestId);
       setError("");
@@ -267,7 +262,9 @@ export default function IncomingBorrowRequests() {
                       <button
                         type="button"
                         disabled={processingId === request.id}
-                        onClick={() => handleResponse(request.id, "APPROVE")}
+                        onClick={() =>
+                          setConfirmModal({ id: request.id, action: "APPROVE" })
+                        }
                         className="flex-1 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         {processingId === request.id
@@ -278,7 +275,9 @@ export default function IncomingBorrowRequests() {
                       <button
                         type="button"
                         disabled={processingId === request.id}
-                        onClick={() => handleResponse(request.id, "REJECT")}
+                        onClick={() =>
+                          setConfirmModal({ id: request.id, action: "REJECT" })
+                        }
                         className="flex-1 rounded-lg border border-red-300 px-4 py-2.5 text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         Decline
@@ -301,6 +300,44 @@ export default function IncomingBorrowRequests() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {confirmModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm">
+            <h3 className="text-base font-semibold text-[#0A1A12] mb-2">
+              {confirmModal.action === "APPROVE"
+                ? "Approve request?"
+                : "Decline request?"}
+            </h3>
+            <p className="text-sm text-gray-500 mb-5">
+              {confirmModal.action === "APPROVE"
+                ? "This will confirm the reservation and notify the borrower."
+                : "The borrower will be notified that their request was declined."}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmModal(null)}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  handleResponse(confirmModal.id, confirmModal.action);
+                  setConfirmModal(null);
+                }}
+                className={`flex-1 px-4 py-2.5 text-sm font-medium text-white rounded-xl transition-colors cursor-pointer ${
+                  confirmModal.action === "APPROVE"
+                    ? "bg-[#0F4C35] hover:bg-[#0F4C35]/90"
+                    : "bg-red-500 hover:bg-red-600"
+                }`}
+              >
+                {confirmModal.action === "APPROVE" ? "Approve" : "Decline"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </section>

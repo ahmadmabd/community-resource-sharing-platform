@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { signOut } from "next-auth/react";
+import { MapPin, Phone, LogOut } from "lucide-react";
 
 type UserProfileCardProps = {
   userId: string;
@@ -73,20 +75,20 @@ export default function UserProfileCard({
             </p>
           )}
 
-          {/* Location */}
-          <div className="mt-4 grid grid-cols-2 gap-2">
-            {userLocation !== undefined && (
-              <div className="rounded-xl bg-gray-50 p-3 text-center">
-                <p className="text-xs text-gray-500">Location</p>
-                <p className="mt-1 font-bold text-gray-900">
-                  📍 {userLocation}
-                </p>
+          <div className="mt-4 border-t border-gray-100" />
+
+          {/* Location & Phone */}
+          <div className="mt-4 space-y-2.5">
+            {userLocation && (
+              <div className="flex items-center gap-2.5">
+                <MapPin className="w-4 h-4 text-[#5BB88A]" />
+                <span className="text-sm text-gray-600">{userLocation}</span>
               </div>
             )}
-            {phone !== undefined && (
-              <div className="rounded-xl bg-gray-50 p-3 text-center">
-                <p className="text-xs text-gray-500">Phone:</p>
-                <p className="mt-1 font-bold text-gray-900">📞 {phone}</p>
+            {phone && (
+              <div className="flex items-center gap-2.5">
+                <Phone className="w-4 h-4 text-[#5BB88A]" />
+                <span className="text-sm text-gray-600">{phone}</span>
               </div>
             )}
           </div>
@@ -95,10 +97,20 @@ export default function UserProfileCard({
           <Link
             href={`/user/${userId}`}
             onClick={() => setIsOpen(false)}
-            className="mt-4 block w-full rounded-xl bg-gray-900 px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-gray-800"
+            className="mt-4 block w-full rounded-xl bg-[#0F4C35] px-4 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-[#0F4C35]/90"
           >
             View Profile
           </Link>
+
+          {/* Logout */}
+          <button
+            type="button"
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-red-500 transition hover:bg-red-50"
+          >
+            <LogOut size={16} />
+            Logout
+          </button>
         </div>
       )}
     </div>

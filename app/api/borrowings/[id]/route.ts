@@ -63,13 +63,19 @@ export async function PATCH(
 
     const borrowing = await prisma.borrowing.findUnique({
       where: { id },
+      include: {
+        resource: { select: { ownerId: true } },
+      },
     });
 
     if (!borrowing) {
       return NextResponse.json({ error: "Borrowing not found" }, { status: 404 });
     }
 
-    if (borrowing.borrowerId !== session.user.id) {
+    const isBorrower = borrowing.borrowerId === session.user.id;
+    const isOwner = borrowing.resource.ownerId === session.user.id;
+
+    if (!isBorrower && !isOwner) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 

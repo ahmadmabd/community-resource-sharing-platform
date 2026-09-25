@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
     const endDate = searchParams.get("endDate") || "";
 
     const where: any = {
-      status: "AVAILABLE",
+      status: { notIn: ["UNAVAILABLE"] },
       ...(search && {
         OR: [
           { title: { contains: search, mode: "insensitive" } },

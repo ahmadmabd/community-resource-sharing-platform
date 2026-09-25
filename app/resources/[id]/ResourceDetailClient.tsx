@@ -53,6 +53,7 @@ interface Resource {
     _count: { resources: number };
   };
   reservations: { startDate: Date; endDate: Date }[];
+  borrowings: { borrowedAt: Date; dueDate: Date }[];
 }
 
 interface Props {
@@ -168,13 +169,21 @@ export default function ResourceDetailClient({
 
       const isPast = date < today;
 
-      const isReserved = resource.reservations.some((r) => {
-        const s = new Date(r.startDate);
-        const e = new Date(r.endDate);
-        s.setHours(0, 0, 0, 0);
-        e.setHours(0, 0, 0, 0);
-        return date >= s && date <= e;
-      });
+      const isReserved =
+        resource.reservations.some((r) => {
+          const s = new Date(r.startDate);
+          const e = new Date(r.endDate);
+          s.setHours(0, 0, 0, 0);
+          e.setHours(0, 0, 0, 0);
+          return date >= s && date <= e;
+        }) ||
+        resource.borrowings.some((b) => {
+          const s = new Date(b.borrowedAt);
+          const e = new Date(b.dueDate);
+          s.setHours(0, 0, 0, 0);
+          e.setHours(0, 0, 0, 0);
+          return date >= s && date <= e;
+        });
 
       const isStart = selectedStart && date.getTime() === selectedStart.getTime();
       const isEnd = selectedEnd && date.getTime() === selectedEnd.getTime();

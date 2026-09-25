@@ -8,9 +8,15 @@ import { successToastStyle } from "@/lib/toastStyles";
 
 interface Props {
   borrowingId: string;
+  label?: string;
+  showReviewModal?: boolean;
 }
 
-export default function ReturnItemButton({ borrowingId }: Props) {
+export default function ReturnItemButton({
+  borrowingId,
+  label = "Return",
+  showReviewModal = true,
+}: Props) {
   const router = useRouter();
   const [returning, setReturning] = useState(false);
   const [showReview, setShowReview] = useState(false);
@@ -30,7 +36,11 @@ export default function ReturnItemButton({ borrowingId }: Props) {
         return;
       }
       toast.success("Item returned successfully!", successToastStyle);
-      setShowReview(true);
+      if (showReviewModal) {
+        setShowReview(true);
+      } else {
+        router.refresh();
+      }
     } catch {
       toast.error("Something went wrong", successToastStyle);
     } finally {
@@ -77,7 +87,7 @@ export default function ReturnItemButton({ borrowingId }: Props) {
         disabled={returning}
         className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:opacity-50 cursor-pointer"
       >
-        {returning ? "Returning..." : "Return"}
+        {returning ? "Returning..." : label}
       </button>
 
       {showReview && (

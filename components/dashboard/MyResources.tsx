@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import Loading from "./loading";
 type ResourceImage = {
   id: string;
@@ -32,7 +31,7 @@ export default function MyResources() {
   const [resources, setResources] = useState<Resource[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const router = useRouter();
+
   useEffect(() => {
     async function fetchResources() {
       try {
@@ -79,13 +78,12 @@ export default function MyResources() {
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <button
-            type="button"
-            onClick={() => router.push("/dashboard")}
-            className="mb-4 text-sm text-gray-600 hover:text-gray-900 hover:cursor-pointer"
+          <Link
+            href="/dashboard"
+            className="mb-4 inline-block text-sm text-gray-600 hover:text-gray-900"
           >
             ← Back to Dashboard
-          </button>
+          </Link>
           <h1 className="text-2xl font-bold text-gray-900">My Resources</h1>
 
           <p className="mt-1 text-sm text-gray-500">
@@ -95,7 +93,7 @@ export default function MyResources() {
 
         <Link
           href="/resources/create"
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          className="rounded-lg bg-[#0F4C35] px-4 py-2 text-sm font-medium text-white hover:bg-[#0F4C35]/90"
         >
           + Add Resource
         </Link>
@@ -114,7 +112,7 @@ export default function MyResources() {
 
           <Link
             href="/resources/create"
-            className="mt-5 inline-block rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white hover:bg-blue-700"
+            className="mt-5 inline-block rounded-lg bg-[#0F4C35] px-5 py-2 text-sm font-medium text-white hover:bg-[#0F4C35]/90"
           >
             Add Your First Resource
           </Link>
@@ -181,26 +179,24 @@ function ResourceCard({
   const imageUrl = resource.images?.[0]?.url;
 
   return (
-    <div className="overflow-hidden rounded-xl border bg-white shadow-sm">
+    <div className="overflow-hidden rounded-2xl bg-white shadow-sm hover:shadow-md transition-shadow">
       {/* Image */}
-      <div className="h-48 bg-gray-100">
-        {imageUrl ? (
-          <img
-            src={imageUrl}
-            alt={resource.title}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="flex h-full items-center justify-center text-gray-400">
-            No image
-          </div>
-        )}
-      </div>
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          alt={resource.title}
+          className="h-48 w-full object-cover rounded-t-2xl"
+        />
+      ) : (
+        <div className="flex h-48 w-full items-center justify-center rounded-t-2xl bg-gray-100 text-gray-400">
+          No image
+        </div>
+      )}
 
       {/* Content */}
       <div className="p-5">
         <div className="mb-3 flex items-start justify-between gap-3">
-          <h2 className="text-lg font-semibold text-gray-900">
+          <h2 className="text-base font-semibold text-[#0A1A12]">
             {resource.title}
           </h2>
 
@@ -209,7 +205,7 @@ function ResourceCard({
 
         <p className="mb-3 text-sm text-gray-500">{resource.description}</p>
 
-        <div className="space-y-1 text-sm text-gray-500">
+        <div className="space-y-1 text-xs text-gray-500">
           <p>
             <span className="font-medium">Category:</span>{" "}
             {resource.category?.name}
@@ -229,16 +225,9 @@ function ResourceCard({
 
         {/* Actions */}
         <div className="mt-5 flex gap-2">
-          {/* <Link
-            href={`/resources/${resource.id}`}
-            className="rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-50 text-black"
-          >
-            View
-          </Link> */}
-
           <Link
             href={`/resources/${resource.id}/edit`}
-            className="rounded-lg border px-3 py-2 text-sm font-medium hover:bg-gray-50  text-black"
+            className="rounded-lg border border-[#0F4C35] px-3 py-2 text-sm font-medium text-[#0F4C35] hover:bg-[#0F4C35]/5"
           >
             Edit
           </Link>
@@ -246,7 +235,7 @@ function ResourceCard({
           <button
             onClick={handleDelete}
             disabled={deleting}
-            className="rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+            className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm font-medium text-red-500 hover:bg-red-100 disabled:opacity-50"
           >
             {deleting ? "Deleting..." : "Delete"}
           </button>
@@ -258,8 +247,8 @@ function ResourceCard({
 
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
-    AVAILABLE: "bg-green-100 text-green-700",
-    RESERVED: "bg-yellow-100 text-yellow-700",
+    AVAILABLE: "bg-[#5BB88A]/15 text-[#0F4C35]",
+    RESERVED: "bg-amber-100 text-amber-700",
     BORROWED: "bg-blue-100 text-blue-700",
     UNAVAILABLE: "bg-gray-100 text-gray-700",
     ARCHIVED: "bg-red-100 text-red-700",

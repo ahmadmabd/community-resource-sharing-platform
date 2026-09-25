@@ -38,19 +38,15 @@ export default async function EditProfilePage({
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 p-6 sm:p-8">
-      <div className="mx-auto max-w-2xl">
-        <EditProfileForm
-          user={{
-            id: user.id,
-            name: user.name ?? "",
-            phone: user.phone ?? "",
-            bio: user.bio ?? "",
-            imageUrl: user.imageUrl ?? "",
-            location: user.location ?? "",
-          }}
-        />
-      </div>
-    </main>
+    <EditProfileForm
+      user={{
+        id: user.id,
+        name: user.name ?? "",
+        phone: user.phone ?? "",
+        bio: user.bio ?? "",
+        imageUrl: user.imageUrl ?? "",
+        location: user.location ?? "",
+      }}
+    />
   );
 }

@@ -40,7 +40,7 @@ export default async function UserProfilePage({
         },
       },
       resources: {
-        where: { status: "AVAILABLE" },
+        where: { status: { notIn: ["UNAVAILABLE"] } },
         include: {
           images: { take: 1 },
           category: { select: { name: true } },

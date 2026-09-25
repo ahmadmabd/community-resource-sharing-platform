@@ -17,12 +17,10 @@ export default async function ReservationsSection() {
   const reservations = await prisma.reservation.findMany({
     where: {
       userId,
-      startDate: {
-        gte: new Date(),
-      },
       status: {
         in: ["PENDING", "CONFIRMED"],
       },
+      borrowing: null,
     },
     include: {
       resource: {
