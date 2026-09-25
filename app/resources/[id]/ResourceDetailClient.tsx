@@ -198,9 +198,9 @@ export default function ResourceDetailClient({
         "relative text-center text-xs py-1.5 rounded-lg transition-all ";
 
       if (isPast || isReserved) {
-        cellClass += "text-gray-300 cursor-not-allowed ";
+        cellClass += "text-gray-200 cursor-not-allowed ";
         if (isReserved && !isPast)
-          cellClass += "bg-red-50 text-red-300 line-through ";
+          cellClass += "bg-red-100 text-red-400 cursor-not-allowed rounded-lg ";
       } else if (isStart || isEnd) {
         cellClass += "bg-[#0F4C35] text-white font-semibold cursor-pointer ";
       } else if (isInRange) {
@@ -210,7 +210,7 @@ export default function ResourceDetailClient({
           "hover:bg-[#5BB88A]/10 text-gray-700 cursor-pointer ";
       }
 
-      if (isToday && !isStart && !isEnd) {
+      if (isToday && !isStart && !isEnd && !isReserved) {
         cellClass += "ring-1 ring-[#5BB88A] ";
       }
 
@@ -487,7 +487,7 @@ export default function ResourceDetailClient({
                     ))}
                   </div>
 
-                  <div className="grid grid-cols-7 gap-y-1">
+                  <div className="grid grid-cols-7 gap-y-1 gap-x-0.5">
                     {renderCalendar()}
                   </div>
                 </div>
