@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Reservation not found" }, { status: 404 });
     }
 
-    if (reservation.resource.ownerId !== session.user.id) {
+    if (reservation.resource.ownerId !== session.user.id && reservation.userId !== session.user.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 

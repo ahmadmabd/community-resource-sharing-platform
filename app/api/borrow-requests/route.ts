@@ -26,6 +26,8 @@ export async function GET() {
             id: true,
             title: true,
             images: { take: 1 },
+            category: { select: { id: true, name: true } },
+            owner: { select: { id: true, name: true, imageUrl: true } },
           },
         },
       },

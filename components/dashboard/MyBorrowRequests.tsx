@@ -42,7 +42,7 @@ export default function MyBorrowRequests() {
   useEffect(() => {
     async function loadRequests() {
       try {
-        const response = await fetch("/api/borrow-requests/me");
+        const response = await fetch("/api/borrow-requests");
 
         if (!response.ok) {
           throw new Error("Failed to load borrow requests");

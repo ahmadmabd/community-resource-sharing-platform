@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import ReturnItemButton from "./ReturnItemButton";
 
 export default async function BorrowingsSection() {
   const session = await getServerSession(authOptions);
@@ -121,12 +122,7 @@ export default async function BorrowingsSection() {
                     </p>
                   </div>
 
-                  <button
-                    type="button"
-                    className="rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-                  >
-                    Return
-                  </button>
+                  <ReturnItemButton borrowingId={borrowing.id} />
                 </div>
               </div>
             );

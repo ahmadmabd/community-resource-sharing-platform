@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import ConfirmPickupButton from "./ConfirmPickupButton";
 
 export default async function ReservationsSection() {
   const session = await getServerSession(authOptions);
@@ -12,7 +13,6 @@ export default async function ReservationsSection() {
   }
 
   const userId = session.user.id;
-  // const userId = "009dd114-8983-4b5c-b2c8-f2f81dd90290";
 
   const reservations = await prisma.reservation.findMany({
     where: {
@@ -113,15 +113,21 @@ export default async function ReservationsSection() {
                 </div>
 
                 {/* Status */}
-                <span
-                  className={`w-fit rounded-full px-3 py-1 text-xs font-medium ${
-                    reservation.status === "CONFIRMED"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-yellow-100 text-yellow-700"
-                  }`}
-                >
-                  {status}
-                </span>
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`w-fit rounded-full px-3 py-1 text-xs font-medium ${
+                      reservation.status === "CONFIRMED"
+                        ? "bg-green-100 text-green-700"
+                        : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
+                    {status}
+                  </span>
+
+                  {reservation.status === "CONFIRMED" && (
+                    <ConfirmPickupButton reservationId={reservation.id} />
+                  )}
+                </div>
               </div>
             );
           })
