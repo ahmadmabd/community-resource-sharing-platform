@@ -99,6 +99,11 @@ export async function PATCH(
         });
       }
 
+      await tx.resource.update({
+        where: { id: borrowing.resourceId },
+        data: { status: "AVAILABLE" },
+      });
+
       return updatedBorrowing;
     });
 

@@ -183,7 +183,26 @@ export async function DELETE(
       );
     }
 
-    // 4. Delete resource
+    // 4. Guard against deleting a resource with active requests or borrowings
+    const activeState = await prisma.borrowRequest.findFirst({
+      where: {
+        resourceId: id,
+        status: { in: ["PENDING", "APPROVED"] },
+      },
+    });
+
+    const activeBorrowing = await prisma.borrowing.findFirst({
+      where: { resourceId: id, status: "ACTIVE" },
+    });
+
+    if (activeState || activeBorrowing) {
+      return NextResponse.json(
+        { error: "Cannot delete a resource with active requests or borrowings" },
+        { status: 400 },
+      );
+    }
+
+    // 5. Delete resource
     await prisma.resource.delete({
       where: { id },
     });
