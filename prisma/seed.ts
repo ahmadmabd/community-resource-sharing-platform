@@ -222,28 +222,28 @@ async function main() {
   await prisma.resourceImage.createMany({
     data: [
       {
-        url: "https://example.com/images/macbook-1.jpg",
+        url: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=800&q=80",
         resourceId: laptop.id,
       },
       {
-        url: "https://example.com/images/macbook-2.jpg",
-        resourceId: laptop.id,
-      },
-      {
-        url: "https://example.com/images/camera-1.jpg",
+        url: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=800&q=80",
         resourceId: camera.id,
       },
       {
-        url: "https://example.com/images/drill-1.jpg",
+        url: "https://images.unsplash.com/photo-1504148455328-c376907d081c?auto=format&fit=crop&w=800&q=80",
         resourceId: drill.id,
       },
       {
-        url: "https://example.com/images/book-1.jpg",
+        url: "https://images.unsplash.com/photo-1495446815901-a7297e633e8d?auto=format&fit=crop&w=800&q=80",
         resourceId: programmingBook.id,
       },
       {
-        url: "https://example.com/images/football-1.jpg",
+        url: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=800&q=80",
         resourceId: football.id,
+      },
+      {
+        url: "https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=800&q=80",
+        resourceId: ladder.id,
       },
     ],
   });
@@ -329,6 +329,17 @@ async function main() {
       borrowedAt: new Date("2026-09-05"),
       dueDate: new Date("2026-09-20"),
       status: "ACTIVE",
+    },
+  });
+
+  const thirdBorrowing = await prisma.borrowing.create({
+    data: {
+      resourceId: football.id,
+      borrowerId: john.id,
+      borrowedAt: new Date("2026-09-10"),
+      dueDate: new Date("2026-09-15"),
+      returnedAt: new Date("2026-09-15"),
+      status: "RETURNED",
     },
   });
 
@@ -493,6 +504,41 @@ async function main() {
       active: activeBorrowing.id,
     },
   });
+
+  // ============================================================
+  // RATINGS
+  // ============================================================
+
+  await prisma.rating.createMany({
+    data: [
+      {
+        borrowingId: borrowing.id,
+        raterId: ahmad.id,
+        ratedUserId: john.id,
+        rating: 5,
+        comment:
+          "Great experience. John was very helpful and the camera was in excellent condition.",
+      },
+      {
+        borrowingId: activeBorrowing.id,
+        raterId: sara.id,
+        ratedUserId: ahmad.id,
+        rating: 4,
+        comment:
+          "Good experience. The book was in very good condition and Ahmad was helpful.",
+      },
+      {
+        borrowingId: thirdBorrowing.id,
+        raterId: john.id,
+        ratedUserId: michael.id,
+        rating: 5,
+        comment:
+          "Excellent experience. Michael was friendly and the football was in great condition.",
+      },
+    ],
+  });
+
+  console.log("⭐ Ratings created");
 }
 
 main()
