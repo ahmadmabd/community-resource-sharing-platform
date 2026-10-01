@@ -103,7 +103,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
     const body = await request.json();
 
-    const { name, phone, bio, image, location } = body;
+    const { name, phone, bio, imageUrl, location } = body;
 
     const updatedUser = await prisma.user.update({
       where: {
@@ -113,7 +113,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
         name,
         phone,
         bio,
-        image,
+        imageUrl,
         location,
       },
     });
